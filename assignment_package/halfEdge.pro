@@ -3,7 +3,7 @@ QT += core widgets
 TARGET = 277
 TEMPLATE = app
 CONFIG += console
-CONFIG += c++11
+CONFIG += c++1z
 win32 {
     LIBS += -lopengl32
     LIBS += -lglut32
