@@ -24,4 +24,5 @@ HEADERS += \
     $$PWD/camera.h \
     $$PWD/cameracontrolshelp.h \
     $$PWD/openglcontext.h \
-    $$PWD/scene/squareplane.h
+    $$PWD/scene/squareplane.h\
+    $$PWD/smartpointerhelp.h
