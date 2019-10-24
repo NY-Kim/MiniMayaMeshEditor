@@ -1,31 +1,34 @@
-#include "squareplane.h"
+#include "pentagon.h"
 #include<la.h>
 #include <iostream>
 
-SquarePlane::SquarePlane(OpenGLContext *mp_context) : Drawable(mp_context)
+Pentagon::Pentagon(OpenGLContext *mp_context) : Drawable(mp_context)
 {}
 
-void SquarePlane::create()
+void Pentagon::create()
 {
 
     std::vector<glm::vec4> pos {glm::vec4(-2, -2, 0, 1),
                                 glm::vec4(2, -2, 0, 1),
                                 glm::vec4(2, 2, 0, 1),
+                                glm::vec4(0, 4, 0, 1),
                                 glm::vec4(-2, 2, 0, 1)};
 
     std::vector<glm::vec4> nor {glm::vec4(0, 0, 1, 0),
                                 glm::vec4(0, 0, 1, 0),
                                 glm::vec4(0, 0, 1, 0),
+                                glm::vec4(0, 0, 1, 0),
                                 glm::vec4(0, 0, 1, 0)};
 
     std::vector<glm::vec4> col {glm::vec4(1, 0, 0, 1),
-                                 glm::vec4(0, 1, 0, 1),
-                                 glm::vec4(0, 0, 1, 1),
-                                 glm::vec4(1, 1, 0, 1)};
+                                glm::vec4(0, 1, 0, 1),
+                                glm::vec4(0, 0, 1, 1),
+                                glm::vec4(1, 1, 0, 1),
+                                glm::vec4(1, 1, 1, 1)};
 
-    std::vector<GLuint> idx {0, 1, 2, 0, 2, 3};
+    std::vector<GLuint> idx {0, 1, 2, 0, 2, 3, 0, 3, 4};
 
-    count = 6; // TODO: Set "count" to the number of indices in your index VBO
+    count = 9; // TODO: Set "count" to the number of indices in your index VBO
 
     generateIdx();
     mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufIdx);

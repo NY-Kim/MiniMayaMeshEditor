@@ -1,0 +1,20 @@
+2019-10-20 9:52PM Looked where where to declare static variable
+https://stackoverflow.com/questions/36147476/initializing-variables-in-header-c
+https://stackoverflow.com/questions/18860895/how-to-initialize-static-members-in-the-header
+Ended up using static instead of extern, and accessing the variables through class::variable format
+
+2019-10-21 2:03AM Looked up Error: use of deleted function (trying to access smart pointer that lost ownership through move)
+https://stackoverflow.com/questions/41060167/strange-error-use-of-deleted-function-stdunique-ptr-tp-dpunique-ptr-wh
+
+2019-10-22 12:32AM Looked up how to detect shift keys in Qt (for visual debugging tools)
+https://stackoverflow.com/questions/17204142/capturing-modifier-keys-qt
+
+2019-10-22 2:01AM Looked up how to set item in a QListWidget as selected - item()->setSelected(true)
+https://stackoverflow.com/questions/46963275/qt-keyboard-modifier-shift-key-along-with-another-keypress-not-being-detected
+https://stackoverflow.com/questions/23065151/how-to-set-an-item-in-a-qlistwidget-as-initially-highlighted
+
+2019-10-22 4:08AM Looked up how to deselect QListWidgetItem - selectionModel()->clear()
+https://stackoverflow.com/questions/15086579/clearing-selection-in-qlistwidget
+
+2019-10-12 8:10PM Looked up float epsilon for normal value comparison
+http://www.enseignement.polytechnique.fr/informatique/INF478/docs/Cpp/en/cpp/types/numeric_limits/epsilon.html

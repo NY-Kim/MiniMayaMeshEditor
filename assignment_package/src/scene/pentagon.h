@@ -7,9 +7,9 @@
 #include <QOpenGLBuffer>
 #include <QOpenGLShaderProgram>
 
-class SquarePlane : public Drawable
+class Pentagon : public Drawable
 {
 public:
-    SquarePlane(OpenGLContext* mp_context);
+    Pentagon(OpenGLContext* mp_context);
     virtual void create();
 };
