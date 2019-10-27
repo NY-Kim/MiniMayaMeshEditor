@@ -73,6 +73,7 @@ void Camera::RotateAboutUp(float deg)
     ref = ref + eye;
     RecomputeAttributes();
 }
+
 void Camera::RotateAboutRight(float deg)
 {
     glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(deg), right);
@@ -95,9 +96,34 @@ void Camera::TranslateAlongRight(float amt)
     eye += translation;
     ref += translation;
 }
+
 void Camera::TranslateAlongUp(float amt)
 {
     glm::vec3 translation = up * amt;
     eye += translation;
     ref += translation;
+}
+
+void Camera::rotateTheta(float deg)
+{
+    glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), deg, right);
+    eye = eye - ref;
+    eye = glm::vec3(rotation * glm::vec4(eye, 1));
+    eye = eye + ref;
+    RecomputeAttributes();
+}
+
+void Camera::rotatePhi(float deg)
+{
+    glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), deg, up);
+    eye = eye - ref;
+    eye = glm::vec3(rotation * glm::vec4(eye, 1));
+    eye = eye + ref;
+    RecomputeAttributes();
+}
+
+void Camera::translateZoom(float amt)
+{
+    glm::vec3 translation = look * amt;
+    eye += translation;
 }

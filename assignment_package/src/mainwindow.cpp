@@ -34,6 +34,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->addVertex, SIGNAL(clicked(bool)), this, SLOT(slot_addVertex()));
     connect(ui->triangulate, SIGNAL(clicked(bool)), this, SLOT(slot_triangulate()));
+    connect(ui->subdivide, SIGNAL(clicked(bool)), this, SLOT(slot_subdivide()));
+    connect(ui->extrudeFace, SIGNAL(clicked(bool)), this, SLOT(slot_extrudeFace()));
 }
 
 MainWindow::~MainWindow()
@@ -151,7 +153,7 @@ void MainWindow::slot_faceB(double b) {
 void MainWindow::slot_vertPosX(double x) {
     ui->mygl->setFocus();
     ui->mygl->m_vertDisplay.representedVertex->pos[0] = x;
-    ui->mygl->planarOperation();
+//    ui->mygl->planarOperation();
     ui->mygl->recreate();
     slot_addMesh(&ui->mygl->m_mesh);
 }
@@ -159,7 +161,7 @@ void MainWindow::slot_vertPosX(double x) {
 void MainWindow::slot_vertPosY(double y) {
     ui->mygl->setFocus();
     ui->mygl->m_vertDisplay.representedVertex->pos[1] = y;
-    ui->mygl->planarOperation();
+//    ui->mygl->planarOperation();
     ui->mygl->recreate();
     slot_addMesh(&ui->mygl->m_mesh);
 }
@@ -167,7 +169,7 @@ void MainWindow::slot_vertPosY(double y) {
 void MainWindow::slot_vertPosZ(double z) {
     ui->mygl->setFocus();
     ui->mygl->m_vertDisplay.representedVertex->pos[2] = z;
-    ui->mygl->planarOperation();
+//    ui->mygl->planarOperation();
     ui->mygl->recreate();
     slot_addMesh(&ui->mygl->m_mesh);
 }
@@ -192,9 +194,27 @@ void MainWindow::slot_triangulate() {
         ui->mygl->reset();
         ui->mygl->update();
 
-        Mesh* mesh = &ui->mygl->m_mesh;
-        slot_addMesh(mesh);
-        slot_selectFace(mesh->faces[mesh->faces.size() - 1].get());
+        slot_addMesh(&ui->mygl->m_mesh);
+    }
+}
+
+void MainWindow::slot_subdivide() {
+    ui->mygl->setFocus();
+    ui->mygl->subdivide();
+    ui->mygl->reset();
+    ui->mygl->update();
+
+    slot_addMesh(&ui->mygl->m_mesh);
+}
+
+void MainWindow::slot_extrudeFace() {
+    if (MainWindow::faceSelected) {
+        ui->mygl->setFocus();
+        ui->mygl->extrudeFace();
+        ui->mygl->reset();
+        ui->mygl->update();
+
+        slot_addMesh(&ui->mygl->m_mesh);
     }
 }
 
@@ -217,4 +237,3 @@ void MainWindow::slot_addMesh(Mesh* mesh) {
         ui->vertsListWidget->addItem(mesh->vertices[i].get());
     }
 }
-

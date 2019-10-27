@@ -52,12 +52,17 @@ public:
 
     void splitHalfEdge(); // split half edge to add vertex
     void triangulate(Face* face); // triangulate face
-    bool isTriangle(Face* face);
+    int getNumEdge(Face* face);
     void triangulateQuadrangle(Face* face1);
 
     void planarOperation(); // make all faces planar by triangulating
     bool isPlanar(Face* face);
     glm::vec3 getNormal(HalfEdge* half_edge);
+
+    void subdivide();
+    void splitByPoint(HalfEdge* he1, Vertex* v3);
+
+    void extrudeFace();
 
 protected:
     void keyPressEvent(QKeyEvent *e);

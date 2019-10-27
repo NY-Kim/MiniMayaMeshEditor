@@ -98,12 +98,12 @@ void Mesh::createCubeMesh() {
         }
     }
 
-    faces[0]->color = glm::vec3(1, 1, 1);
-    faces[1]->color = glm::vec3(1, 1, 1);
-    faces[2]->color = glm::vec3(1, 1, 1);
-    faces[3]->color = glm::vec3(1, 1, 1);
-    faces[4]->color = glm::vec3(1, 1, 1);
-    faces[5]->color = glm::vec3(1, 1, 1);
+    faces[0]->color = glm::vec3(1, 0, 0);
+    faces[1]->color = glm::vec3(0, 1, 0);
+    faces[2]->color = glm::vec3(1, 0, 0);
+    faces[3]->color = glm::vec3(0, 1, 0);
+    faces[4]->color = glm::vec3(0, 0, 1);
+    faces[5]->color = glm::vec3(0, 0, 1);
 
     half_edges[0]->vertex = vertices[1].get();
     half_edges[1]->vertex = vertices[2].get();

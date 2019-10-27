@@ -43,6 +43,8 @@ private slots:
 
     void slot_addVertex();
     void slot_triangulate();
+    void slot_subdivide();
+    void slot_extrudeFace();
 
 private:
     Ui::MainWindow *ui;

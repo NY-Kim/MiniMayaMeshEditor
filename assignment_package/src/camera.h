@@ -39,4 +39,8 @@ public:
     void TranslateAlongLook(float amt);
     void TranslateAlongRight(float amt);
     void TranslateAlongUp(float amt);
+
+    void rotateTheta(float deg);
+    void rotatePhi(float deg);
+    void translateZoom(float amt);
 };
