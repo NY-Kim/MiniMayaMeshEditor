@@ -2,6 +2,8 @@
 #include <ui_mainwindow.h>
 #include "cameracontrolshelp.h"
 #include <iostream>
+#include <QFileDialog>
+#include <QDir>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -36,6 +38,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->triangulate, SIGNAL(clicked(bool)), this, SLOT(slot_triangulate()));
     connect(ui->subdivide, SIGNAL(clicked(bool)), this, SLOT(slot_subdivide()));
     connect(ui->extrudeFace, SIGNAL(clicked(bool)), this, SLOT(slot_extrudeFace()));
+    connect(ui->importobj, SIGNAL(clicked(bool)), this, SLOT(slot_importObj()));
 }
 
 MainWindow::~MainWindow()
@@ -153,7 +156,6 @@ void MainWindow::slot_faceB(double b) {
 void MainWindow::slot_vertPosX(double x) {
     ui->mygl->setFocus();
     ui->mygl->m_vertDisplay.representedVertex->pos[0] = x;
-//    ui->mygl->planarOperation();
     ui->mygl->recreate();
     slot_addMesh(&ui->mygl->m_mesh);
 }
@@ -161,7 +163,6 @@ void MainWindow::slot_vertPosX(double x) {
 void MainWindow::slot_vertPosY(double y) {
     ui->mygl->setFocus();
     ui->mygl->m_vertDisplay.representedVertex->pos[1] = y;
-//    ui->mygl->planarOperation();
     ui->mygl->recreate();
     slot_addMesh(&ui->mygl->m_mesh);
 }
@@ -169,7 +170,6 @@ void MainWindow::slot_vertPosY(double y) {
 void MainWindow::slot_vertPosZ(double z) {
     ui->mygl->setFocus();
     ui->mygl->m_vertDisplay.representedVertex->pos[2] = z;
-//    ui->mygl->planarOperation();
     ui->mygl->recreate();
     slot_addMesh(&ui->mygl->m_mesh);
 }
@@ -216,6 +216,19 @@ void MainWindow::slot_extrudeFace() {
 
         slot_addMesh(&ui->mygl->m_mesh);
     }
+}
+
+void MainWindow::slot_importObj() {
+    QString filename = QFileDialog::getOpenFileName(0,
+                                                    QString("Load OBJ File"),
+                                                    QDir::currentPath().append(QString("../..")),
+                                                    QString("*.obj"));
+    ui->mygl->loadObj(filename);
+    ui->mygl->setFocus();
+    ui->mygl->reset();
+    ui->mygl->update();
+
+    slot_addMesh(&ui->mygl->m_mesh);
 }
 
 void MainWindow::on_actionCamera_Controls_triggered()

@@ -45,6 +45,7 @@ private slots:
     void slot_triangulate();
     void slot_subdivide();
     void slot_extrudeFace();
+    void slot_importObj();
 
 private:
     Ui::MainWindow *ui;

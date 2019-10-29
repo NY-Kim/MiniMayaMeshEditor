@@ -45,5 +45,4 @@ public:
     ~HalfEdge();
     HalfEdge(Face* face);
 };
-
 #endif

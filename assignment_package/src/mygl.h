@@ -59,10 +59,11 @@ public:
     bool isPlanar(Face* face);
     glm::vec3 getNormal(HalfEdge* half_edge);
 
-    void subdivide();
+    void subdivide(); // subdivide mesh into quadrangles
     void splitByPoint(HalfEdge* he1, Vertex* v3);
 
-    void extrudeFace();
+    void extrudeFace(); // extrude selected face
+    void loadObj(QString filename); // load obj file
 
 protected:
     void keyPressEvent(QKeyEvent *e);

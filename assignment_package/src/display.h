@@ -1,5 +1,6 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
+
 #import <halfedge.h>
 #import <drawable.h>
 

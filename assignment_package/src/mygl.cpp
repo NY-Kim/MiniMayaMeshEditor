@@ -7,8 +7,7 @@
 #include <QApplication>
 #include <QKeyEvent>
 #include <set>
-#include <map>
-
+#include <random>
 
 
 MyGL::MyGL(QWidget *parent)
@@ -97,16 +96,11 @@ void MyGL::paintGL()
 
 //#define NOPE
 #ifndef NOPE
-    //Create a model matrix. This one scales the sphere uniformly by 3, then translates it by <-2,0,0>.
-    //Note that we have to transpose the model matrix before passing it to the shader
-    //This is because OpenGL expects column-major matrices, but you've
-    //implemented row-major matrices.
-    glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(-2,0,0)) * glm::rotate(glm::mat4(), 0.25f * 3.14159f, glm::vec3(0,1,0));
     //Send the geometry's transformation matrix to the shader
-    m_progFlat.setModelMatrix(model);
-    m_progLambert.setModelMatrix(model);
+    m_progFlat.setModelMatrix(glm::mat4(1.0f));
+    m_progLambert.setModelMatrix(glm::mat4(1.0f));
 
-    m_progLambert.draw(m_mesh);
+    m_progFlat.draw(m_mesh);
     glDisable(GL_DEPTH_TEST);
     m_progFlat.draw(m_vertDisplay);
     m_progFlat.draw(m_faceDisplay);
@@ -129,17 +123,25 @@ void MyGL::keyPressEvent(QKeyEvent *e)
     if (e->key() == Qt::Key_Escape) {
         QApplication::quit();
     } else if (e->key() == Qt::Key_Right) {
-        m_glCamera.RotateAboutUp(-amount);
+//        m_glCamera.RotateAboutUp(-amount);
+        m_glCamera.rotatePhi(-amount);
     } else if (e->key() == Qt::Key_Left) {
-        m_glCamera.RotateAboutUp(amount);
+//        m_glCamera.RotateAboutUp(amount);
+        m_glCamera.rotatePhi(amount);
     } else if (e->key() == Qt::Key_Up) {
-        m_glCamera.RotateAboutRight(-amount);
+//        m_glCamera.RotateAboutRight(-amount);
+        m_glCamera.rotateTheta(amount);
     } else if (e->key() == Qt::Key_Down) {
-        m_glCamera.RotateAboutRight(amount);
+//        m_glCamera.RotateAboutRight(amount);
+        m_glCamera.rotateTheta(-amount);
     } else if (e->key() == Qt::Key_1) {
         m_glCamera.fovy += amount;
     } else if (e->key() == Qt::Key_2) {
         m_glCamera.fovy -= amount;
+    }  else if (e->key() == Qt::Key_3) {
+        m_glCamera.translateZoom(amount);
+    } else if (e->key() == Qt::Key_4) {
+        m_glCamera.translateZoom(-amount);
     } else if (e->key() == Qt::Key_W) {
         m_glCamera.TranslateAlongLook(amount);
     } else if (e->key() == Qt::Key_S) {
@@ -263,9 +265,6 @@ glm::vec3 MyGL::getNormal(HalfEdge* half_edge) {
     glm::vec3 curr_pos = half_edge->vertex->pos;
     glm::vec3 prev_pos = half_edge->sym->vertex->pos;
     glm::vec3 next_pos = half_edge->next->vertex->pos;
-//    std::cout << half_edge->sym->vertex->id << std::endl;
-//    std::cout << half_edge->vertex->id << std::endl;
-//    std::cout << half_edge->next->vertex->id << std::endl;
 
     return glm::normalize(glm::cross(prev_pos - curr_pos, next_pos - curr_pos));
 
@@ -405,13 +404,14 @@ void MyGL::subdivide() {
         HalfEdge* last_sym = nullptr;
 
         do {
-            uPtr<Face> new_face = mkU<Face>(face->color);
+            uPtr<Face> new_face = mkU<Face>();
+            new_face->color += face->color + glm::vec3(0.1, 0.1, 0.1);
+            new_face->color += new_face->color - float(rand() % 2) * 1.3f;
             uPtr<HalfEdge> to_centroid = mkU<HalfEdge>();
             uPtr<HalfEdge> from_centroid = mkU<HalfEdge>();
 
             Vertex* next_start_vertex;
 
-            new_face->color = face->color;
             new_face->half_edge = half_edge;
 
             next = half_edge->next->next;
@@ -584,3 +584,88 @@ void MyGL::extrudeFace() {
     m_mesh.half_edges.push_back(std::move(he4));
 }
 
+void MyGL::loadObj(QString filename) {
+    std::vector<uPtr<Vertex>> vertices;
+    std::vector<uPtr<HalfEdge>> half_edges;
+    std::vector<uPtr<Face>> faces;
+    std::map<std::pair<int, int>, int> sym_map;
+
+    QFile file(filename);
+    if (file.open(QIODevice::ReadOnly)) {
+        Vertex::id_count = 0;
+        HalfEdge::id_count = 0;
+        Face::id_count = 0;
+
+        QTextStream in(&file);
+
+        while (!in.atEnd()) {
+            QString line = in.readLine();
+            QStringList tok_list = line.split(" ");
+
+            if (tok_list[0] == "v"){
+                uPtr<Vertex> vertex = mkU<Vertex>(glm::vec3(tok_list[1].toDouble(),
+                                                            tok_list[2].toDouble(),
+                                                            tok_list[3].toDouble()));
+                vertices.push_back(std::move(vertex));
+            } else if (tok_list[0] == "f"){
+                float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+                float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+                float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+                uPtr<Face> face = mkU<Face>(glm::vec3(r, g, b));
+
+                HalfEdge* first_edge = nullptr;
+                HalfEdge* last_edge = nullptr;
+
+                int first_idx = -1;
+                int last_idx = -1;
+                for (int i = 1; i < tok_list.size(); i++) {
+                    int index = tok_list[i].split("/")[0].toInt() - 1;
+
+                    uPtr<HalfEdge> half_edge = mkU<HalfEdge>();
+                    vertices[index]->half_edge = half_edge.get();
+                    if (first_edge == nullptr) {
+                        first_edge = half_edge.get();
+                    }
+                    if (last_edge != nullptr) {
+                        last_edge->next = half_edge.get();
+
+                        if (sym_map.find(std::pair<int, int>(index, last_idx)) != sym_map.end()) {
+                            int sym_idx = sym_map[std::pair<int, int>(index, last_idx)];
+                            half_edge->sym = half_edges[sym_idx].get();
+                            half_edges[sym_idx]->sym = half_edge.get();
+                        } else {
+                            sym_map[std::pair<int, int>(last_idx, index)] =  half_edge->id;
+                        }
+                    }
+
+                    last_edge = half_edge.get();
+                    half_edge->vertex = vertices[index].get();
+                    half_edge->face = face.get();
+
+                    if (first_idx == -1) {
+                        first_idx = index;
+                    }
+
+                    last_idx = index;
+                    half_edges.push_back(std::move(half_edge));
+                }
+                last_edge->next = first_edge;
+                face->half_edge = first_edge;
+
+                if (sym_map.find(std::pair<int, int>(first_idx, last_idx)) != sym_map.end()) {
+                    int sym_idx = sym_map[std::pair<int, int>(first_idx, last_idx)];
+                    first_edge->sym = half_edges[sym_idx].get();
+                    half_edges[sym_idx]->sym = first_edge;
+                } else {
+                    sym_map[std::pair<int, int>(last_idx, first_idx)] =  first_edge->id;
+                }
+                faces.push_back(std::move(face));
+            }
+        }
+        file.close();
+
+        m_mesh.vertices = std::move(vertices);
+        m_mesh.half_edges = std::move(half_edges);
+        m_mesh.faces = std::move(faces);
+    }
+}
