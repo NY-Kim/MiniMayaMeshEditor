@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     MainWindow::heSelected = false;
     MainWindow::faceSelected = false;
+    MainWindow::vertexSelected = false;
 
     disableSpinBox();
     connect(ui->mygl, SIGNAL(sendMesh(Mesh*)), this, SLOT(slot_addMesh(Mesh*)));
@@ -39,6 +40,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->subdivide, SIGNAL(clicked(bool)), this, SLOT(slot_subdivide()));
     connect(ui->extrudeFace, SIGNAL(clicked(bool)), this, SLOT(slot_extrudeFace()));
     connect(ui->importobj, SIGNAL(clicked(bool)), this, SLOT(slot_importObj()));
+    connect(ui->sharp, SIGNAL(clicked(bool)), this, SLOT(slot_sharp()));
 }
 
 MainWindow::~MainWindow()
@@ -72,6 +74,7 @@ void MainWindow::deselect() {
 void MainWindow::slot_selectHalfEdge(QListWidgetItem *half_edge) {
     MainWindow::heSelected = true;
     MainWindow::faceSelected = false;
+    MainWindow::vertexSelected = false;
 
     ui->mygl->setFocus();
     ui->mygl->reset();
@@ -80,6 +83,7 @@ void MainWindow::slot_selectHalfEdge(QListWidgetItem *half_edge) {
 
     HalfEdge* he = dynamic_cast<HalfEdge*>(half_edge);
     ui->halfEdgesListWidget->item(he->id)->setSelected(true);
+    ui->sharp->setChecked(he->sharp);
     ui->mygl->m_halfEdgeDisplay.updateHalfEdge(dynamic_cast<HalfEdge*>(half_edge));
     ui->mygl->m_halfEdgeDisplay.create();
     ui->mygl->update();
@@ -89,6 +93,7 @@ void MainWindow::slot_selectHalfEdge(QListWidgetItem *half_edge) {
 void MainWindow::slot_selectFace(QListWidgetItem *face) {
     MainWindow::heSelected = false;
     MainWindow::faceSelected = true;
+    MainWindow::vertexSelected = false;
 
     ui->mygl->setFocus();
     ui->mygl->reset();
@@ -101,6 +106,7 @@ void MainWindow::slot_selectFace(QListWidgetItem *face) {
 
     Face* f = dynamic_cast<Face*>(face);
     ui->facesListWidget->item(f->id)->setSelected(true);
+    ui->sharp->setChecked(f->sharp);
     ui->mygl->m_faceDisplay.updateFace(f);
     ui->mygl->m_faceDisplay.create();
     ui->mygl->update();
@@ -114,6 +120,7 @@ void MainWindow::slot_selectFace(QListWidgetItem *face) {
 void MainWindow::slot_selectVertex(QListWidgetItem *vertex) {
     MainWindow::heSelected = false;
     MainWindow::faceSelected = false;
+    MainWindow::vertexSelected = true;
 
     ui->mygl->setFocus();
     ui->mygl->reset();
@@ -126,6 +133,7 @@ void MainWindow::slot_selectVertex(QListWidgetItem *vertex) {
 
     Vertex* v = dynamic_cast<Vertex*>(vertex);
     ui->vertsListWidget->item(v->id)->setSelected(true);
+    ui->sharp->setChecked(v->sharp);
     ui->mygl->m_vertDisplay.updateVertex(v);
     ui->mygl->m_vertDisplay.create();
     ui->mygl->update();
@@ -229,6 +237,24 @@ void MainWindow::slot_importObj() {
     ui->mygl->update();
 
     slot_addMesh(&ui->mygl->m_mesh);
+}
+
+void MainWindow::slot_sharp() {
+    ui->mygl->setFocus();
+    if (heSelected) {
+        HalfEdge* he = ui->mygl->m_halfEdgeDisplay.representedHalfEdge;
+        he->sharp = !he->sharp;
+        he->sym->sharp = !he->sym->sharp;
+        ui->halfEdgesListWidget->item(he->id)->setSelected(true);
+    } else if (faceSelected) {
+        Face* f = ui->mygl->m_faceDisplay.representedFace;
+        f->sharp = !f->sharp;
+        ui->facesListWidget->item(f->id)->setSelected(true);
+    } else if (vertexSelected) {
+        Vertex* v = ui->mygl->m_vertDisplay.representedVertex;
+        v->sharp = !v->sharp;
+        ui->vertsListWidget->item(v->id)->setSelected(true);
+    }
 }
 
 void MainWindow::on_actionCamera_Controls_triggered()

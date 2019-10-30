@@ -371,12 +371,25 @@
      <rect>
       <x>650</x>
       <y>470</y>
-      <width>391</width>
+      <width>191</width>
       <height>21</height>
      </rect>
     </property>
     <property name="text">
      <string>Import OBJ File</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="sharp">
+    <property name="geometry">
+     <rect>
+      <x>910</x>
+      <y>470</y>
+      <width>91</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Sharp</string>
     </property>
    </widget>
   </widget>

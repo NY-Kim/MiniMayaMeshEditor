@@ -12,6 +12,7 @@ public:
     HalfEdge* half_edge;
     int id;
     static int id_count;
+    bool sharp;
 
     Vertex();
     ~Vertex();
@@ -25,6 +26,7 @@ public:
     glm::vec3 color;
     int id;
     static int id_count;
+    bool sharp;
 
     Face();
     ~Face();
@@ -40,6 +42,7 @@ public:
     Vertex* vertex;
     int id;
     static int id_count;
+    bool sharp;
 
     HalfEdge();
     ~HalfEdge();

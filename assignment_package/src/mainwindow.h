@@ -17,6 +17,7 @@ class MainWindow : public QMainWindow
 public:
     bool heSelected;
     bool faceSelected;
+    bool vertexSelected;
 
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
@@ -46,6 +47,7 @@ private slots:
     void slot_subdivide();
     void slot_extrudeFace();
     void slot_importObj();
+    void slot_sharp();
 
 private:
     Ui::MainWindow *ui;

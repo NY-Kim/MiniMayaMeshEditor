@@ -238,6 +238,11 @@ void MyGL::splitByPoint(HalfEdge* he1, Vertex* v3) {
         he2->sym = he1b.get();
         he1b->sym = he2;
 
+        if (he1->sharp) {
+            he1b->sharp = true;
+            he2b->sharp = true;
+        }
+
         m_mesh.half_edges.push_back(std::move(he1b));
         m_mesh.half_edges.push_back(std::move(he2b));
 }
@@ -305,7 +310,6 @@ bool MyGL::isPlanar(Face *face) {
 
     do {
         glm::vec3 n = getNormal(half_edge);
-//        std::cout << n[0] << ", " << n[1] << ", " << n[2] <<std::endl;
         if (std::abs(n[0] - normal[0]) > DBL_EPSILON ||
             std::abs(n[1] - normal[1]) > DBL_EPSILON ||
             std::abs(n[2] - normal[2]) > DBL_EPSILON) {
@@ -350,6 +354,21 @@ void MyGL::subdivide() {
         m_mesh.vertices.push_back(std::move(centroid));
     }
 
+    std::set<Vertex*> sharp_vert; // stores vertices treated as sharp in sharp face
+    std::set<HalfEdge*> sharp_he; // stores half-edges treated as sharp in sharp face
+    for (unsigned int i = 0; i < m_mesh.faces.size(); i++) {
+        Face* face = m_mesh.faces[i].get();
+        if (face->sharp) {
+            HalfEdge* half_edge = face->half_edge;
+            do {
+                sharp_he.insert(half_edge);
+                sharp_he.insert(half_edge->sym);
+                sharp_vert.insert(half_edge->vertex);
+                half_edge = half_edge->next;
+            } while (half_edge != face->half_edge);
+        }
+    }
+
     // compute smoothed midpoint
     std::set<HalfEdge*> computed;
     unsigned int num_half_edges = m_mesh.half_edges.size();
@@ -360,12 +379,22 @@ void MyGL::subdivide() {
             continue;
         }
 
-        Vertex* v1 = half_edge->vertex;
-        Vertex* v2 = half_edge->sym->vertex;
-        Vertex* f1 = centroids[half_edge->face->id];
-        Vertex* f2 = centroids[half_edge->sym->face->id];
+        glm::vec3 mid_pos;
+        if ((sharp_he.find(half_edge) != sharp_he.end()) || half_edge->sharp) {
+            Vertex* v1 = half_edge->vertex;
+            Vertex* v2 = half_edge->sym->vertex;
 
-        uPtr<Vertex> midpoint = mkU<Vertex>((v1->pos + v2->pos + f1->pos + f2->pos) / 4.0f);
+            mid_pos = (v1->pos + v2->pos) * 0.5f;
+        } else {
+            Vertex* v1 = half_edge->vertex;
+            Vertex* v2 = half_edge->sym->vertex;
+            Vertex* f1 = centroids[half_edge->face->id];
+            Vertex* f2 = centroids[half_edge->sym->face->id];
+
+            mid_pos = (v1->pos + v2->pos + f1->pos + f2->pos) / 4.0f;
+        }
+
+        uPtr<Vertex> midpoint = mkU<Vertex>(mid_pos);
         Vertex* mp = midpoint.get();
         m_mesh.vertices.push_back(std::move(midpoint));
         splitByPoint(half_edge, mp);
@@ -375,18 +404,33 @@ void MyGL::subdivide() {
 
     // smooth original vertices
     for (Vertex* vertex : vertices) {
+        if ((sharp_vert.find(vertex) != sharp_vert.end()) || vertex->sharp) {
+            continue;
+        }
+
+        std::vector<HalfEdge*> sharp_edge;
         int n = 0;
         glm::vec3 v = vertex->pos;
         glm::vec3 f = glm::vec3(0);
         glm::vec3 e = glm::vec3(0);
         HalfEdge* half_edge = vertex->half_edge;
         do {
+            if (half_edge->sharp) {
+                sharp_edge.push_back(half_edge);
+            }
             n++;
             f += centroids[half_edge->face->id]->pos;
             e += half_edge->sym->vertex->pos;
             half_edge = half_edge->next->sym;
         } while(half_edge != vertex->half_edge);
-        vertex->pos = (n - 2.0f) * v / float(n) + e / float(n * n) + f / float(n * n);
+
+        if (sharp_edge.size() < 2) {
+            vertex->pos = (n - 2.0f) * v / float(n) + e / float(n * n) + f / float(n * n);
+        } else if (sharp_edge.size() == 2) {
+            glm::vec3 v1 = sharp_edge[0]->sym->vertex->pos;
+            glm::vec3 v2 = sharp_edge[1]->sym->vertex->pos;
+            vertex->pos = 0.75f * v + 0.125f * v1 + 0.125f * v2;
+        }
     }
 
     // quadrangulate face
@@ -439,6 +483,18 @@ void MyGL::subdivide() {
             last_sym = to_centroid.get();;
             start_vertex = next_start_vertex;
             half_edge = next;
+
+            if (face->sharp) {
+                new_face->sharp = true;
+                new_face->color = face->color;
+                HalfEdge* half_edge = new_face->half_edge;
+                do {
+                    sharp_he.insert(half_edge);
+                    sharp_he.insert(half_edge->sym);
+                    sharp_vert.insert(half_edge->vertex);
+                    half_edge = half_edge->next;
+                } while (half_edge != new_face->half_edge);
+            }
 
             m_mesh.faces.push_back(std::move(new_face));
             m_mesh.half_edges.push_back(std::move(to_centroid));
