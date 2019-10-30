@@ -405,8 +405,8 @@ void MyGL::subdivide() {
 
         do {
             uPtr<Face> new_face = mkU<Face>();
-            new_face->color += face->color + glm::vec3(0.1, 0.1, 0.1);
-            new_face->color += new_face->color - float(rand() % 2) * 1.3f;
+            new_face->color = face->color - face->color * float(rand() % 2) * 0.2f;
+            new_face->color -= glm::vec3(0.2f, 0.2f, 0.2f);
             uPtr<HalfEdge> to_centroid = mkU<HalfEdge>();
             uPtr<HalfEdge> from_centroid = mkU<HalfEdge>();
 
@@ -474,16 +474,28 @@ void MyGL::subdivide() {
 
 void MyGL::extrudeFace() {
     Face* face = m_faceDisplay.representedFace;
-    face->color += glm::vec3(0.1, 0.1, 0.1);
     HalfEdge* half_edge = face->half_edge;
-    glm::vec3 curr_pos = half_edge->vertex->pos;
-    glm::vec3 prev_pos = half_edge->sym->vertex->pos;
-    glm::vec3 next_pos = half_edge->next->vertex->pos;
+    glm::vec3 normal;
+    do {
+        glm::vec3 curr_pos = half_edge->vertex->pos;
+        glm::vec3 prev_pos = half_edge->sym->vertex->pos;
+        glm::vec3 next_pos = half_edge->next->vertex->pos;
 
-    glm::vec3 normal = glm::cross(prev_pos - curr_pos, next_pos - curr_pos);
-    glm::vec3 displacement = 0.75f * normal;
+        normal = glm::cross(prev_pos - curr_pos, next_pos - curr_pos);
 
-    uPtr<Vertex> vertex1 = mkU<Vertex>(prev_pos + displacement);
+        if (std::abs(normal[0]) > DBL_EPSILON ||
+            std::abs(normal[1]) > DBL_EPSILON ||
+            std::abs(normal[2]) > DBL_EPSILON) {
+            break;
+        }
+
+        half_edge = half_edge->next;
+    } while (half_edge != face->half_edge);
+
+    half_edge = face->half_edge;
+    glm::vec3 displacement = 0.75f * glm::normalize(normal);
+
+    uPtr<Vertex> vertex1 = mkU<Vertex>(half_edge->sym->vertex->pos + displacement);
     Vertex* vertex = vertex1.get();
     m_mesh.vertices.push_back(std::move(vertex1));
     Vertex* last_vert = vertex;
@@ -491,7 +503,8 @@ void MyGL::extrudeFace() {
     HalfEdge* first_sym = nullptr;
 
     do {
-        uPtr<Face> new_face = mkU<Face>(face->color - glm::vec3(0.05, 0.05, 0.05));
+        uPtr<Face> new_face = mkU<Face>(face->color * 0.8f);
+        new_face->color -= glm::vec3(0.1, 0.1, 0.1);
         uPtr<HalfEdge> he1 = mkU<HalfEdge>();
         uPtr<HalfEdge> he2 = mkU<HalfEdge>();
         uPtr<HalfEdge> he3 = mkU<HalfEdge>();
