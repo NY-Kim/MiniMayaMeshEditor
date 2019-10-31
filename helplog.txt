@@ -1,3 +1,5 @@
+HW 6
+
 2019-10-20 9:52PM Looked where where to declare static variable
 https://stackoverflow.com/questions/36147476/initializing-variables-in-header-c
 https://stackoverflow.com/questions/18860895/how-to-initialize-static-members-in-the-header
@@ -16,5 +18,15 @@ https://stackoverflow.com/questions/23065151/how-to-set-an-item-in-a-qlistwidget
 2019-10-22 4:08AM Looked up how to deselect QListWidgetItem - selectionModel()->clear()
 https://stackoverflow.com/questions/15086579/clearing-selection-in-qlistwidget
 
-2019-10-12 8:10PM Looked up float epsilon for normal value comparison
+2019-10-22 8:10PM Looked up float epsilon for normal value comparison
 http://www.enseignement.polytechnique.fr/informatique/INF478/docs/Cpp/en/cpp/types/numeric_limits/epsilon.html
+
+HW 7 
+2019-10-28 2:11AM Looked up std::map insert
+https://www.geeksforgeeks.org/map-insert-in-c-stl/
+
+2019-10-28 2:15AM Looked up std::map contains (find)
+https://stackoverflow.com/questions/3136520/determine-if-map-contains-a-value-for-a-key
+
+2019-10-28 3:12AM Looked up how to generate random float
+https://stackoverflow.com/questions/686353/random-float-number-generation
