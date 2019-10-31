@@ -21,12 +21,29 @@ https://stackoverflow.com/questions/15086579/clearing-selection-in-qlistwidget
 2019-10-22 8:10PM Looked up float epsilon for normal value comparison
 http://www.enseignement.polytechnique.fr/informatique/INF478/docs/Cpp/en/cpp/types/numeric_limits/epsilon.html
 
-HW 7 
-2019-10-28 2:11AM Looked up std::map insert
-https://www.geeksforgeeks.org/map-insert-in-c-stl/
+HW 7
 
-2019-10-28 2:15AM Looked up std::map contains (find)
-https://stackoverflow.com/questions/3136520/determine-if-map-contains-a-value-for-a-key
+2019-10-26 1:14PM Looked up set data structure in C++ 
+https://en.cppreference.com/w/cpp/container/set
+https://stackoverflow.com/questions/1701067/how-to-check-that-an-element-is-in-a-stdset
 
-2019-10-28 3:12AM Looked up how to generate random float
+2019-10-27 7:20PM Looked up QFileDialog
+http://www.codebind.com/cpp-tutorial/qt-tutorial/qt-tutorials-beginners-qfiledialog-getopenfilename-example/
+
+2019-10-28 1:47AM Looked up how to read file line by line in Qt
+https://stackoverflow.com/questions/5444959/read-a-text-file-line-by-line-in-qt
+
+2019-10-28 2:13AM Looked up how to convert QString to double / int
+https://stackoverflow.com/questions/43685944/qstring-to-double
+
+2019-10-28 3:00PM Looked up how to generate random float
 https://stackoverflow.com/questions/686353/random-float-number-generation
+
+2019-10-28 8:31PM Looked up how to use std::map with 2 keys (tuple as keys)
+https://stackoverflow.com/questions/1112531/what-is-the-best-way-to-use-two-keys-with-a-stdmap
+
+2019-10-28 8:48PM Looked up how to iterate through std::map
+https://thispointer.com/how-to-iterate-over-a-map-in-c/
+
+2019-10-28 9:25PM Looked up how to generate 0 or 1 with random probability
+https://stackoverflow.com/questions/21579696/random-number-either-0-or-1
