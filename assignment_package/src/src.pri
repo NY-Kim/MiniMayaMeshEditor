@@ -13,10 +13,10 @@ SOURCES += \
     $$PWD/cameracontrolshelp.cpp \
     $$PWD/openglcontext.cpp \
     $$PWD/scene/squareplane.cpp \
-    $$PWD/halfedge.cpp \
     $$PWD/mesh.cpp \
     $$PWD/display.cpp \
-    $$PWD/scene/pentagon.cpp
+    $$PWD/scene/pentagon.cpp \
+    $$PWD/primitives.cpp
 
 HEADERS += \
     $$PWD/la.h \
@@ -30,7 +30,8 @@ HEADERS += \
     $$PWD/openglcontext.h \
     $$PWD/scene/squareplane.h\
     $$PWD/smartpointerhelp.h\
-    $$PWD/halfedge.h\
     $$PWD/mesh.h \
     $$PWD/display.h \
-    $$PWD/scene/pentagon.h
+    $$PWD/scene/pentagon.h \
+    $$PWD/primitives.h \
+    $$PWD/joint.h

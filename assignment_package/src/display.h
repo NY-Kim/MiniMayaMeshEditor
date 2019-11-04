@@ -1,7 +1,7 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
-#import <halfedge.h>
+#import <primitives.h>
 #import <drawable.h>
 
 class HalfEdgeDisplay : public Drawable {

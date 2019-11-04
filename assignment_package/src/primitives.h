@@ -1,5 +1,5 @@
-#ifndef HALFEDGE_H
-#define HALFEDGE_H
+#ifndef PRIMITIVES_H
+#define PRIMITIVES_H
 #include <la.h>
 #include <QListWidget>
 

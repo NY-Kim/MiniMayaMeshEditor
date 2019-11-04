@@ -671,12 +671,12 @@ void MyGL::loadObj(QString filename) {
             QString line = in.readLine();
             QStringList tok_list = line.split(" ");
 
-            if (tok_list[0] == "v"){
+            if (tok_list[0] == "v") {
                 uPtr<Vertex> vertex = mkU<Vertex>(glm::vec3(tok_list[1].toDouble(),
                                                             tok_list[2].toDouble(),
                                                             tok_list[3].toDouble()));
                 vertices.push_back(std::move(vertex));
-            } else if (tok_list[0] == "f"){
+            } else if (tok_list[0] == "f") {
                 float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
                 float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
                 float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);

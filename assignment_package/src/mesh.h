@@ -1,6 +1,6 @@
 #ifndef MESH_H
 #define MESH_H
-#include <halfedge.h>
+#include <primitives.h>
 #include <drawable.h>
 #include <smartpointerhelp.h>
 

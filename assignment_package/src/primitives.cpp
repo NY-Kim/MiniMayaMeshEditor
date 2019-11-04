@@ -1,4 +1,4 @@
-#include <halfedge.h>
+#include <primitives.h>
 
 int Vertex::id_count = 0;
 
