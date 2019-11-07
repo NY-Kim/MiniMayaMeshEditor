@@ -7,7 +7,11 @@
 #include <QApplication>
 #include <QKeyEvent>
 #include <set>
+#include <queue>
 #include <random>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
 
 
 MyGL::MyGL(QWidget *parent)
@@ -15,8 +19,8 @@ MyGL::MyGL(QWidget *parent)
       m_geomSquare(this),
       m_progLambert(this), m_progFlat(this),
       m_glCamera(),
-      m_mesh(this),
-      m_vertDisplay(this), m_faceDisplay(this), m_halfEdgeDisplay(this) {}
+      m_vertDisplay(this), m_halfEdgeDisplay(this), m_faceDisplay(this), m_jointDisplay(this),
+      m_mesh(this), m_skeleton(this) {}
 
 MyGL::~MyGL()
 {
@@ -24,6 +28,7 @@ MyGL::~MyGL()
     glDeleteVertexArrays(1, &vao);
     m_geomSquare.destroy();
     m_mesh.destroy();
+    m_skeleton.destroy();
 }
 
 void MyGL::initializeGL()
@@ -59,7 +64,6 @@ void MyGL::initializeGL()
     m_progLambert.create(":/glsl/lambert.vert.glsl", ":/glsl/lambert.frag.glsl");
     // Create and set up the flat lighting shader
     m_progFlat.create(":/glsl/flat.vert.glsl", ":/glsl/flat.frag.glsl");
-
 
     // We have to have a VAO bound in OpenGL 3.2 Core. But if we're not
     // using multiple VAOs, we can just bind one once.
@@ -102,9 +106,11 @@ void MyGL::paintGL()
 
     m_progFlat.draw(m_mesh);
     glDisable(GL_DEPTH_TEST);
+    m_progFlat.draw(m_skeleton);
     m_progFlat.draw(m_vertDisplay);
     m_progFlat.draw(m_faceDisplay);
     m_progFlat.draw(m_halfEdgeDisplay);
+    m_progFlat.draw(m_jointDisplay);
     glEnable(GL_DEPTH_TEST);
 ;
 #endif
@@ -123,16 +129,12 @@ void MyGL::keyPressEvent(QKeyEvent *e)
     if (e->key() == Qt::Key_Escape) {
         QApplication::quit();
     } else if (e->key() == Qt::Key_Right) {
-//        m_glCamera.RotateAboutUp(-amount);
         m_glCamera.rotatePhi(-amount);
     } else if (e->key() == Qt::Key_Left) {
-//        m_glCamera.RotateAboutUp(amount);
         m_glCamera.rotatePhi(amount);
     } else if (e->key() == Qt::Key_Up) {
-//        m_glCamera.RotateAboutRight(-amount);
         m_glCamera.rotateTheta(amount);
     } else if (e->key() == Qt::Key_Down) {
-//        m_glCamera.RotateAboutRight(amount);
         m_glCamera.rotateTheta(-amount);
     } else if (e->key() == Qt::Key_1) {
         m_glCamera.fovy += amount;
@@ -189,6 +191,7 @@ void MyGL::reset() {
     m_vertDisplay.representedVertex = nullptr;
     m_halfEdgeDisplay.representedHalfEdge = nullptr;
     m_faceDisplay.representedFace = nullptr;
+    m_jointDisplay.representedJoint = nullptr;
     this->recreate();
 }
 
@@ -197,10 +200,12 @@ void MyGL::recreate() {
     m_faceDisplay.destroy();
     m_halfEdgeDisplay.destroy();
     m_mesh.destroy();
+    m_skeleton.destroy();
     m_vertDisplay.create();
     m_faceDisplay.create();
     m_halfEdgeDisplay.create();
     m_mesh.create();
+    m_skeleton.create();
 }
 
 void MyGL::splitHalfEdge() {
@@ -660,7 +665,7 @@ void MyGL::loadObj(QString filename) {
     std::map<std::pair<int, int>, int> sym_map;
 
     QFile file(filename);
-    if (file.open(QIODevice::ReadOnly)) {
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         Vertex::id_count = 0;
         HalfEdge::id_count = 0;
         Face::id_count = 0;
@@ -738,3 +743,134 @@ void MyGL::loadObj(QString filename) {
         m_mesh.faces = std::move(faces);
     }
 }
+
+void MyGL::loadJSON(QString filename) {
+    std::vector<uPtr<Joint>> joints;
+
+    QFile file(filename);
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QString text = file.readAll();
+        file.close();
+
+        QJsonDocument doc = QJsonDocument::fromJson(text.toUtf8());
+        QJsonObject obj = doc.object();
+        QJsonObject root = obj.value(QString("root")).toObject();
+
+        std::queue<std::pair<QJsonObject, Joint*>> queue;
+        queue.push(std::pair<QJsonObject, Joint*>(root, nullptr));
+
+        while (!queue.empty()) {
+            std::pair<QJsonObject, Joint*> pair = queue.front();
+            QJsonObject joint_obj = pair.first;
+            Joint* parent = pair.second;
+            queue.pop();
+
+            QString name = joint_obj["name"].toString();
+            QJsonArray position = joint_obj["pos"].toArray();
+            QJsonArray rotation = joint_obj["rot"].toArray();
+            QJsonArray children = joint_obj["children"].toArray();
+
+            glm::vec3 pos =  glm::vec3(position[0].toDouble(),
+                                       position[1].toDouble(),
+                                       position[2].toDouble());
+            glm::vec3 axis = glm::vec3(float(rotation[1].toDouble()),
+                                       float(rotation[2].toDouble()),
+                                       float(rotation[3].toDouble()));
+
+            glm::quat rot = glm::angleAxis(float(rotation[0].toDouble()), axis);
+
+            uPtr<Joint> joint = mkU<Joint>(name, parent, pos, rot);
+            if (parent != nullptr) {
+                joint->parent->children.push_back(joint.get());
+                joint->parent->addChild(joint.get());
+            }
+
+            for (int i = 0; i < children.size(); i++) {
+                QJsonObject child = children[i].toObject();
+                queue.push(std::pair<QJsonObject, Joint*>(child, joint.get()));
+            }
+
+            joints.push_back(std::move(joint));
+        }
+    }
+
+    m_skeleton.joints = std::move(joints);
+    emit sendSkeleton(&m_skeleton);
+}
+
+float MyGL::distance(glm::vec3 v1, glm::vec3 v2) {
+    return std::sqrt(pow(v1[0] - v2[0], 2) + pow(v1[1] - v2[1], 2) + pow(v1[2] - v2[2], 2));
+}
+
+void MyGL::skinMesh() {
+    for (unsigned int i = 0; i < m_mesh.vertices.size(); i++) {
+        Vertex* vertex = m_mesh.vertices[i].get();
+
+        Joint* j1 = nullptr; // closest joint
+        float j1_dist = 0;
+        Joint* j2 = nullptr; // second closest joint
+        float j2_dist = 0;
+
+        for (unsigned int j = 0; j < m_skeleton.joints.size(); j++) {
+            Joint* joint = m_skeleton.joints[j].get();
+            glm::vec3 joint_pos = glm::vec3(joint->getOverallTransformation() * glm::vec4(0, 0, 0, 1));
+            float dist = distance(joint_pos, vertex->pos);
+
+//            std::cout << "Vertex: " << vertex->id << std::endl;
+//            std::cout << "Given" << std::endl;
+//            std::cout << joint->id << std::endl;
+//            std::cout << joint_pos[0] << ", " << joint_pos[1] << ", " << joint_pos[2] << std::endl;
+
+            if (j1 != nullptr) {
+                if (j1_dist > dist) {
+                    j2 = j1;
+                    j2_dist = j1_dist;
+                    j1 = joint;
+                    j1_dist = dist;
+//                    std::cout << "AAA" << std::endl;
+//                    std::cout << j1->id << std::endl;
+//                    std::cout << j2->id << std::endl;
+                    continue;
+                }
+            } else {
+                j1 = joint;
+                j1_dist = dist;
+                continue;
+            }
+
+            if (j2 != nullptr) {
+                if (j2_dist > dist) {
+                    j2 = joint;
+                    j2_dist = dist;
+                    continue;
+                }
+            } else {
+                j2 = joint;
+                j2_dist = dist;
+                continue;
+            }
+        }
+
+//        std::cout << j1->position[0] << ", " << j1->position[1] << ", " << j1->position[2] << std::endl;
+//        std::cout << j2->position[0] << ", " << j2->position[1] << ", " << j2->position[2] << std::endl;
+
+        vertex->joint_inf.push_back(std::pair<int, float>(j1->id, j1_dist / (j1_dist + j2_dist)));
+        vertex->joint_inf.push_back(std::pair<int, float>(j2->id, j2_dist / (j1_dist + j2_dist)));
+    }
+}
+
+void MyGL::jointRotateX() {
+    Joint* joint = m_jointDisplay.representedJoint;
+    joint->rotation = glm::angleAxis(glm::radians(5.f), glm::vec3(1, 0, 0)) * joint->rotation;
+}
+
+void MyGL::jointRotateY() {
+    Joint* joint = m_jointDisplay.representedJoint;
+    joint->rotation = glm::angleAxis(glm::radians(5.f), glm::vec3(0, 1, 0)) * joint->rotation;
+}
+
+void MyGL::jointRotateZ() {
+    Joint* joint = m_jointDisplay.representedJoint;
+    joint->rotation = glm::angleAxis(glm::radians(5.f), glm::vec3(0, 0, 1)) * joint->rotation;
+}
+

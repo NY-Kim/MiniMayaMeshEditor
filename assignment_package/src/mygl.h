@@ -9,6 +9,7 @@
 #include "camera.h"
 #include <display.h>
 #include <mesh.h>
+#include <skeleton.h>
 
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLShaderProgram>
@@ -22,7 +23,6 @@ private:
     SquarePlane m_geomSquare;// The instance of a unit cylinder we can use to render any cylinder
     ShaderProgram m_progLambert;// A shader program that uses lambertian reflection
     ShaderProgram m_progFlat;// A shader program that uses "flat" reflection (no shadowing at all)
-
     GLuint vao; // A handle for our vertex array object. This will store the VBOs created in our geometry classes.
                 // Don't worry too much about this. Just know it is necessary in order to render geometry.
 
@@ -38,8 +38,10 @@ public:
     VertexDisplay m_vertDisplay;
     HalfEdgeDisplay m_halfEdgeDisplay;
     FaceDisplay m_faceDisplay;
+    JointDisplay m_jointDisplay;
 
     Mesh m_mesh;
+    Skeleton m_skeleton;
 
     explicit MyGL(QWidget *parent = nullptr);
     ~MyGL();
@@ -63,13 +65,24 @@ public:
     void splitByPoint(HalfEdge* he1, Vertex* v3);
 
     void extrudeFace(); // extrude selected face
+
     void loadObj(QString filename); // load obj file
+    void loadJSON(QString filename); // laod JSON file
+
+    float distance(glm::vec3 v1, glm::vec3 v2);
+    void skinMesh();
+
+    void updateJointPosition(float);
+    void jointRotateX();
+    void jointRotateY();
+    void jointRotateZ();
 
 protected:
     void keyPressEvent(QKeyEvent *e);
 
 signals:
     void sendMesh(Mesh*);
+    void sendSkeleton(Skeleton*);
     void sendSelectedHE(QListWidgetItem*);
     void sendSelectedVertex(QListWidgetItem*);
     void sendSelectedFace(QListWidgetItem*);

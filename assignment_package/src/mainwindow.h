@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <mesh.h>
+#include <skeleton.h>
 
 
 namespace Ui {
@@ -18,6 +19,8 @@ public:
     bool heSelected;
     bool faceSelected;
     bool vertexSelected;
+    bool jointSelected;
+    bool jsonImported;
 
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
@@ -29,10 +32,12 @@ private slots:
     void on_actionCamera_Controls_triggered();
 
     void slot_addMesh(Mesh*);
+    void slot_addSkeleton(Skeleton*);
 
     void slot_selectHalfEdge(QListWidgetItem*);
     void slot_selectFace(QListWidgetItem*);
     void slot_selectVertex(QListWidgetItem*);
+    void slot_selectJoint(QTreeWidgetItem*);
 
     void slot_faceR(double);
     void slot_faceG(double);
@@ -42,12 +47,22 @@ private slots:
     void slot_vertPosY(double);
     void slot_vertPosZ(double);
 
+    void slot_jointPosX(double);
+    void slot_jointPosY(double);
+    void slot_jointPosZ(double);
+
+    void slot_jointRotX();
+    void slot_jointRotY();
+    void slot_jointRotZ();
+
     void slot_addVertex();
     void slot_triangulate();
     void slot_subdivide();
     void slot_extrudeFace();
     void slot_importObj();
     void slot_sharp();
+    void slot_importJSON();
+    void slot_skinMesh();
 
 private:
     Ui::MainWindow *ui;

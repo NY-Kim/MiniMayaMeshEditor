@@ -2,7 +2,9 @@
 
 int Vertex::id_count = 0;
 
-Vertex::Vertex() : id(id_count), pos(glm::vec3(0, 0, 0)), half_edge(nullptr), sharp(false)
+Vertex::Vertex()
+    : id(id_count), pos(glm::vec3(0, 0, 0)), half_edge(nullptr), sharp(false),
+      joint_inf(std::vector<std::pair<int, float>>())
 {
     this->setText(QString::number(id_count));
     this->id_count++;
@@ -10,7 +12,9 @@ Vertex::Vertex() : id(id_count), pos(glm::vec3(0, 0, 0)), half_edge(nullptr), sh
 
 Vertex::~Vertex() {}
 
-Vertex::Vertex(glm::vec3 pos) : id(id_count), pos(pos), half_edge(nullptr), sharp(false)
+Vertex::Vertex(glm::vec3 pos)
+    : id(id_count), pos(pos), half_edge(nullptr), sharp(false),
+      joint_inf(std::vector<std::pair<int, float>>())
 {
     this->setText(QString::number(id_count));
     this->id_count++;

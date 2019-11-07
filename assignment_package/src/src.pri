@@ -16,7 +16,9 @@ SOURCES += \
     $$PWD/mesh.cpp \
     $$PWD/display.cpp \
     $$PWD/scene/pentagon.cpp \
-    $$PWD/primitives.cpp
+    $$PWD/primitives.cpp \
+    $$PWD/joint.cpp \
+    $$PWD/skeleton.cpp
 
 HEADERS += \
     $$PWD/la.h \
@@ -34,4 +36,5 @@ HEADERS += \
     $$PWD/display.h \
     $$PWD/scene/pentagon.h \
     $$PWD/primitives.h \
-    $$PWD/joint.h
+    $$PWD/joint.h \
+    $$PWD/skeleton.h

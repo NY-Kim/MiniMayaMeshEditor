@@ -1,5 +1,6 @@
 #include <display.h>
 #include <iostream>
+#include <glm/gtx/rotate_vector.hpp>
 
 HalfEdgeDisplay::HalfEdgeDisplay(OpenGLContext* context)
     : Drawable(context), representedHalfEdge(nullptr) {}
@@ -140,4 +141,82 @@ void VertexDisplay::updateVertex(Vertex *vertex) {
 
 GLenum VertexDisplay::drawMode() {
     return GL_POINTS;
+}
+
+JointDisplay::JointDisplay(OpenGLContext *context) : Drawable(context) {}
+
+JointDisplay::~JointDisplay() {}
+
+void JointDisplay::create() {
+
+    std::vector<GLuint> idx;
+    std::vector<glm::vec4> pos;
+    std::vector<glm::vec4> col;
+
+    glm::vec4 offset = glm::vec4(0, 0.5, 0, 1);
+    for (int j = 0; j < 12; j++) {
+        pos.push_back(representedJoint->getOverallTransformation() * offset);
+        col.push_back(glm::vec4(0, 1, 1, 1));
+        offset = glm::rotateX(offset, glm::radians(30.f));
+
+        if (j == 11) {
+            idx.push_back(GLuint(j));
+            idx.push_back(GLuint(0));
+        } else {
+            idx.push_back(GLuint(j));
+            idx.push_back(GLuint(j + 1));
+        }
+    }
+
+    offset = glm::vec4(0, 0, 0.5, 1);
+    for (int j = 12; j < 24; j++) {
+        pos.push_back(representedJoint->getOverallTransformation() * offset);
+        col.push_back(glm::vec4(1, 0, 1, 1));
+        offset = glm::rotateY(offset, glm::radians(30.f));
+
+        if (j == 23) {
+            idx.push_back(GLuint(j));
+            idx.push_back(GLuint(12));
+        } else {
+            idx.push_back(GLuint(j));
+            idx.push_back(GLuint(j + 1));
+        }
+    }
+
+    offset = glm::vec4(0.5, 0, 0, 1);
+    for (int j = 24; j < 36; j++) {
+        pos.push_back(representedJoint->getOverallTransformation() * offset);
+        col.push_back(glm::vec4(1, 1, 0, 1));
+        offset = glm::rotateZ(offset, glm::radians(30.f));
+
+        if (j == 35) {
+            idx.push_back(GLuint(j));
+            idx.push_back(GLuint(24));
+        } else {
+            idx.push_back(GLuint(j));
+            idx.push_back(GLuint(j + 1));
+        }
+    }
+
+    count = idx.size();
+
+    generateIdx();
+    mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufIdx);
+    mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, idx.size() * sizeof(GLuint), idx.data(), GL_STATIC_DRAW);
+
+    generatePos();
+    mp_context->glBindBuffer(GL_ARRAY_BUFFER, bufPos);
+    mp_context->glBufferData(GL_ARRAY_BUFFER, pos.size() * sizeof(glm::vec4), pos.data(), GL_STATIC_DRAW);
+
+    generateCol();
+    mp_context->glBindBuffer(GL_ARRAY_BUFFER, bufCol);
+    mp_context->glBufferData(GL_ARRAY_BUFFER, col.size() * sizeof(glm::vec4), col.data(), GL_STATIC_DRAW);
+}
+
+void JointDisplay::updateJoint(Joint *joint) {
+    representedJoint = joint;
+}
+
+GLenum JointDisplay::drawMode() {
+    return GL_LINES;
 }

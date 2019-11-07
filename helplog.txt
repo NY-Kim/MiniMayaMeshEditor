@@ -53,3 +53,20 @@ HW 8
 2019-11-04 11:35AM Looked up how to define quaternions in C++ (glm::quat)
 http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-17-quaternions/
 https://stackoverflow.com/questions/38145042/quaternion-to-matrix-using-glm
+
+2019-11-04 02:49PM Looked up how to draw circle in OpenGL 
+https://stackoverflow.com/questions/22444450/drawing-circle-with-opengl
+https://stackoverflow.com/questions/20923232/how-to-rotate-a-vector-by-a-given-direction
+
+2019-11-05 1:19AM Looked up how to read JSON file in Qt
+https://stackoverflow.com/questions/15893040/how-to-create-read-write-json-files-in-qt5
+
+2019-11-05 1:32AM Looked up gym::angleAxis() to get quaternion
+https://glm.g-truc.net/0.9.0/api/a00184.html
+
+2019-11-05 1:53AM Looked up Queue in Qt
+https://en.cppreference.com/w/cpp/container/queue
+
+2019-11-05 4:20PM Looked up distance function to find distance between two vectors
+https://www.geeksforgeeks.org/stddistance-in-c/ 
+

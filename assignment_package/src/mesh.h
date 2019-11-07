@@ -15,7 +15,6 @@ public:
     ~Mesh();
     void create() override;
     void createCubeMesh();
-
 };
 
 #endif

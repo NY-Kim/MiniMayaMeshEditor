@@ -2,17 +2,19 @@
 #define PRIMITIVES_H
 #include <la.h>
 #include <QListWidget>
+#include <joint.h>
 
 class HalfEdge;
 
 class Vertex : public QListWidgetItem
 {
 public:
+    int id;
     glm::vec3 pos;
     HalfEdge* half_edge;
-    int id;
     static int id_count;
     bool sharp;
+    std::vector<std::pair<int, float>> joint_inf;
 
     Vertex();
     ~Vertex();
@@ -22,9 +24,9 @@ public:
 class Face : public QListWidgetItem
 {
 public:
-    HalfEdge* half_edge;
-    glm::vec3 color;
     int id;
+    glm::vec3 color;
+    HalfEdge* half_edge;
     static int id_count;
     bool sharp;
 
@@ -36,11 +38,11 @@ public:
 class HalfEdge : public QListWidgetItem
 {
 public:
+    int id;
     HalfEdge* next;
     HalfEdge* sym; 
     Face* face;
     Vertex* vertex;
-    int id;
     static int id_count;
     bool sharp;
 

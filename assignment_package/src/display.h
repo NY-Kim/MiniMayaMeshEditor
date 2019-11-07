@@ -1,8 +1,8 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
-
-#import <primitives.h>
-#import <drawable.h>
+#include <primitives.h>
+#include <drawable.h>
+#include <joint.h>
 
 class HalfEdgeDisplay : public Drawable {
 public:
@@ -34,6 +34,18 @@ public:
     ~VertexDisplay();
     void create() override;
     void updateVertex(Vertex *vertex);
+    GLenum drawMode() override;
+};
+
+class JointDisplay : public Drawable
+{
+public:
+    Joint *representedJoint;
+
+    JointDisplay(OpenGLContext* context);
+    ~JointDisplay();
+    void create() override;
+    void updateJoint(Joint *joint);
     GLenum drawMode() override;
 };
 
