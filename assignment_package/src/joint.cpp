@@ -4,7 +4,7 @@ int Joint::id_count = 0;
 
 Joint::Joint(QString name, Joint *parent, glm::vec3 position, glm::quat rotation)
     : name(name), parent(parent), children(std::vector<Joint*>()),
-      position(position), rotation(rotation), bind_matrix(), id(id_count)
+      position(position), rotation(rotation), bind_matrix(glm::mat4(1.0f)), id(id_count)
 {
     this->setText(0, name);
     this->id_count++;

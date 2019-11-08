@@ -1,12 +1,14 @@
 #include "shaderprogram.h"
 #include <QFile>
 #include <QStringBuilder>
+#include <iostream>
 
 
 ShaderProgram::ShaderProgram(OpenGLContext *context)
     : vertShader(), fragShader(), prog(),
-      attrPos(-1), attrNor(-1), attrCol(-1),
+      attrPos(-1), attrNor(-1), attrCol(-1), attrJointID(-1), attrJointWeight(-1),
       unifModel(-1), unifModelInvTr(-1), unifViewProj(-1), unifCamPos(-1),
+      unifBindMats(-1), unifTransMats(-1),
       context(context)
 {}
 
@@ -61,11 +63,15 @@ void ShaderProgram::create(const char *vertfile, const char *fragfile)
     attrPos = context->glGetAttribLocation(prog, "vs_Pos");
     attrNor = context->glGetAttribLocation(prog, "vs_Nor");
     attrCol = context->glGetAttribLocation(prog, "vs_Col");
+    attrJointID = context->glGetAttribLocation(prog, "in_jointIDs");
+    attrJointWeight = context->glGetAttribLocation(prog, "in_weights");
 
     unifModel      = context->glGetUniformLocation(prog, "u_Model");
     unifModelInvTr = context->glGetUniformLocation(prog, "u_ModelInvTr");
     unifViewProj   = context->glGetUniformLocation(prog, "u_ViewProj");
-    unifCamPos      = context->glGetUniformLocation(prog, "u_CamPos");
+    unifCamPos     = context->glGetUniformLocation(prog, "u_CamPos");
+    unifBindMats   = context->glGetUniformLocation(prog, "ua_bindMats");
+    unifTransMats  = context->glGetUniformLocation(prog, "ua_jointMats");
 }
 
 void ShaderProgram::useMe()
@@ -121,6 +127,42 @@ void ShaderProgram::setViewProjMatrix(const glm::mat4 &vp)
     }
 }
 
+void ShaderProgram::setBindMatrix(const std::vector<glm::mat4> &bind)
+{
+    // Tell OpenGL to use this shader program for subsequent function calls
+    useMe();
+
+    if(unifBindMats != -1) {
+    // Pass a 4x4 matrix into a uniform variable in our shader
+                    // Handle to the matrix variable on the GPU
+    context->glUniformMatrix4fv(unifBindMats,
+                    // How many matrices to pass
+                       bind.size(),
+                    // Transpose the matrix? OpenGL uses column-major, so no.
+                       GL_FALSE,
+                    // Pointer to the first element of the matrix
+                       &bind[0][0][0]);
+    }
+}
+
+void ShaderProgram::setTransMatrix(const std::vector<glm::mat4> &trans)
+{
+    // Tell OpenGL to use this shader program for subsequent function calls
+    useMe();
+
+    if(unifTransMats != -1) {
+    // Pass a 4x4 matrix into a uniform variable in our shader
+                    // Handle to the matrix variable on the GPU
+    context->glUniformMatrix4fv(unifTransMats,
+                    // How many matrices to pass
+                       trans.size(),
+                    // Transpose the matrix? OpenGL uses column-major, so no.
+                       GL_FALSE,
+                    // Pointer to the first element of the matrix
+                       &trans[0][0][0]);
+    }
+}
+
 void ShaderProgram::setCamPos(glm::vec3 pos)
 {
     useMe();
@@ -160,6 +202,16 @@ void ShaderProgram::draw(Drawable &d)
         context->glVertexAttribPointer(attrCol, 4, GL_FLOAT, false, 0, nullptr);
     }
 
+    if (attrJointID != -1 && d.bindJointID()) {
+        context->glEnableVertexAttribArray(attrJointID);
+        context->glVertexAttribIPointer(attrJointID, 2, GL_INT, 0, nullptr);
+    }
+
+    if (attrJointWeight != -1 && d.bindJointWeight()) {
+        context->glEnableVertexAttribArray(attrJointWeight);
+        context->glVertexAttribPointer(attrJointWeight, 2, GL_FLOAT, false, 0, nullptr);
+    }
+
     // Bind the index buffer and then draw shapes from it.
     // This invokes the shader program, which accesses the vertex buffers.
     d.bindIdx();
@@ -168,6 +220,8 @@ void ShaderProgram::draw(Drawable &d)
     if (attrPos != -1) context->glDisableVertexAttribArray(attrPos);
     if (attrNor != -1) context->glDisableVertexAttribArray(attrNor);
     if (attrCol != -1) context->glDisableVertexAttribArray(attrCol);
+    if (attrJointID != -1) context->glDisableVertexAttribArray(attrJointID);
+    if (attrJointWeight != -1) context->glDisableVertexAttribArray(attrJointWeight);
 
     context->printGLErrorLog();
 }

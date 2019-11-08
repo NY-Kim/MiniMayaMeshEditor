@@ -10,6 +10,8 @@ void Mesh::create() {
     std::vector<glm::vec4> pos;
     std::vector<glm::vec4> nor;
     std::vector<glm::vec4> col;
+    std::vector<glm::ivec2> jointID;
+    std::vector<glm::vec2> jointWeight;
 
     for (unsigned int i = 0; i < faces.size(); i++) {
         Face* face = faces[i].get();
@@ -26,6 +28,18 @@ void Mesh::create() {
             glm::vec3 next_pos = curr_edge->next->vertex->pos;
             glm::vec3 normal = glm::cross(prev_pos - curr_pos, next_pos - curr_pos);
             nor.push_back(glm::vec4(normal, 0));
+
+            Vertex* vertex = curr_edge->vertex;
+            if (vertex->joint_inf.size() > 0) {
+                // joint ID
+                jointID.push_back(glm::ivec2(vertex->joint_inf[0].first, vertex->joint_inf[1].first));
+                // joint weight
+                jointWeight.push_back(glm::vec2(vertex->joint_inf[0].second, vertex->joint_inf[1].second));
+
+//                std::cout << vertex->joint_inf[0].first << ": " << vertex->joint_inf[0].second << std::endl;
+//                std::cout << vertex->joint_inf[1].first << ": " << vertex->joint_inf[1].second << std::endl;
+            }
+
             curr_edge = curr_edge->next;
         }
         while (curr_edge != face->half_edge);
@@ -54,6 +68,13 @@ void Mesh::create() {
     mp_context->glBindBuffer(GL_ARRAY_BUFFER, bufCol);
     mp_context->glBufferData(GL_ARRAY_BUFFER, col.size() * sizeof(glm::vec4), col.data(), GL_STATIC_DRAW);
 
+    generateJointID();
+    mp_context->glBindBuffer(GL_ARRAY_BUFFER, bufJointID);
+    mp_context->glBufferData(GL_ARRAY_BUFFER, jointID.size() * sizeof(glm::ivec2), jointID.data(), GL_STATIC_DRAW);
+
+    generateJointWeight();
+    mp_context->glBindBuffer(GL_ARRAY_BUFFER, bufJointWeight);
+    mp_context->glBufferData(GL_ARRAY_BUFFER, jointWeight.size() * sizeof(glm::vec2), jointWeight.data(), GL_STATIC_DRAW);
 }
 
 void Mesh::createCubeMesh() {

@@ -39,6 +39,8 @@ private slots:
     void slot_selectVertex(QListWidgetItem*);
     void slot_selectJoint(QTreeWidgetItem*);
 
+    void displayQuat();
+
     void slot_faceR(double);
     void slot_faceG(double);
     void slot_faceB(double);

@@ -78,13 +78,6 @@ void Skeleton::create() {
 
     count = idx.size();
 
-//    std::cout << count << std::endl;
-//    for (int i = 0; i < count; i++) {
-//        if (i %2 == 0) {
-//            std::cout << idx[i] << ", " << idx[i+ 1] << std::endl;
-//        }
-//    }
-
     generateIdx();
     mp_context->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufIdx);
     mp_context->glBufferData(GL_ELEMENT_ARRAY_BUFFER, idx.size() * sizeof(GLuint), idx.data(), GL_STATIC_DRAW);

@@ -4,6 +4,8 @@
 #include <iostream>
 #include <QFileDialog>
 #include <QDir>
+#include <cmath>
+#include <string>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -194,6 +196,16 @@ void MainWindow::slot_selectJoint(QTreeWidgetItem *joint) {
     ui->jointPosYSpinBox->setValue(j->position[1]);
     ui->jointPosZSpinBox->setValue(j->position[2]);
 
+    this->displayQuat();
+}
+
+void MainWindow::displayQuat() {
+    ui->mygl->setFocus();
+    glm::quat quat = ui->mygl->m_jointDisplay.representedJoint->rotation;
+    ui->theta->setText(QString::fromStdString(std::to_string(acos(quat.w) * 2).substr(0, 4)));
+    ui->angle->setText(QString::fromStdString("(" + std::to_string(roundf(quat.x * 100) / 100).substr(0, 4) + ", " +
+                                                    std::to_string(roundf(quat.y * 100) / 100).substr(0, 4) + ", " +
+                                                    std::to_string(roundf(quat.z * 100) / 100).substr(0, 4) + ")"));
 }
 
 void MainWindow::slot_faceR(double r) {
@@ -347,8 +359,9 @@ void MainWindow::slot_jointPosX(double x){
         ui->mygl->m_jointDisplay.representedJoint->position[0] = x;
         ui->mygl->m_jointDisplay.destroy();
         ui->mygl->m_jointDisplay.create();
-        ui->mygl->recreate();
         slot_addMesh(&ui->mygl->m_mesh);
+        ui->mygl->recreate();
+        ui->mygl->update();
     }
 }
 
@@ -358,10 +371,10 @@ void MainWindow::slot_jointPosY(double y){
         ui->mygl->m_jointDisplay.representedJoint->position[1] = y;
         ui->mygl->m_jointDisplay.destroy();
         ui->mygl->m_jointDisplay.create();
-        ui->mygl->recreate();
         slot_addMesh(&ui->mygl->m_mesh);
+        ui->mygl->recreate();
+        ui->mygl->update();
     }
-
 }
 
 void MainWindow::slot_jointPosZ(double z){
@@ -370,8 +383,9 @@ void MainWindow::slot_jointPosZ(double z){
         ui->mygl->m_jointDisplay.representedJoint->position[2] = z;
         ui->mygl->m_jointDisplay.destroy();
         ui->mygl->m_jointDisplay.create();
-        ui->mygl->recreate();
         slot_addMesh(&ui->mygl->m_mesh);
+        ui->mygl->recreate();
+        ui->mygl->update();
     }
 }
 
@@ -381,9 +395,10 @@ void MainWindow::slot_jointRotX(){
         ui->mygl->jointRotateX();
         ui->mygl->m_jointDisplay.destroy();
         ui->mygl->m_jointDisplay.create();
+        slot_addMesh(&ui->mygl->m_mesh);
         ui->mygl->recreate();
         ui->mygl->update();
-        slot_addMesh(&ui->mygl->m_mesh);
+        this->displayQuat();
     }
 }
 
@@ -393,11 +408,11 @@ void MainWindow::slot_jointRotY(){
         ui->mygl->jointRotateY();
         ui->mygl->m_jointDisplay.destroy();
         ui->mygl->m_jointDisplay.create();
+        slot_addMesh(&ui->mygl->m_mesh);
         ui->mygl->recreate();
         ui->mygl->update();
-        slot_addMesh(&ui->mygl->m_mesh);
+        this->displayQuat();
     }
-
 }
 
 void MainWindow::slot_jointRotZ(){
@@ -406,9 +421,10 @@ void MainWindow::slot_jointRotZ(){
         ui->mygl->jointRotateZ();
         ui->mygl->m_jointDisplay.destroy();
         ui->mygl->m_jointDisplay.create();
+        slot_addMesh(&ui->mygl->m_mesh);
         ui->mygl->recreate();
         ui->mygl->update();
-        slot_addMesh(&ui->mygl->m_mesh);
+        this->displayQuat();
     }
 }
 

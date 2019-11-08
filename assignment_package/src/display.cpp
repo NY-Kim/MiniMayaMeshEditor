@@ -156,7 +156,7 @@ void JointDisplay::create() {
     glm::vec4 offset = glm::vec4(0, 0.5, 0, 1);
     for (int j = 0; j < 12; j++) {
         pos.push_back(representedJoint->getOverallTransformation() * offset);
-        col.push_back(glm::vec4(0, 1, 1, 1));
+        col.push_back(glm::vec4(0.4, 0, 0, 1));
         offset = glm::rotateX(offset, glm::radians(30.f));
 
         if (j == 11) {
@@ -171,7 +171,7 @@ void JointDisplay::create() {
     offset = glm::vec4(0, 0, 0.5, 1);
     for (int j = 12; j < 24; j++) {
         pos.push_back(representedJoint->getOverallTransformation() * offset);
-        col.push_back(glm::vec4(1, 0, 1, 1));
+        col.push_back(glm::vec4(0, 0.4, 0, 1));
         offset = glm::rotateY(offset, glm::radians(30.f));
 
         if (j == 23) {
@@ -186,7 +186,7 @@ void JointDisplay::create() {
     offset = glm::vec4(0.5, 0, 0, 1);
     for (int j = 24; j < 36; j++) {
         pos.push_back(representedJoint->getOverallTransformation() * offset);
-        col.push_back(glm::vec4(1, 1, 0, 1));
+        col.push_back(glm::vec4(0, 0, 0.4, 1));
         offset = glm::rotateZ(offset, glm::radians(30.f));
 
         if (j == 35) {

@@ -18,12 +18,16 @@ public:
     int attrPos; // A handle for the "in" vec4 representing vertex position in the vertex shader
     int attrNor; // A handle for the "in" vec4 representing vertex normal in the vertex shader
     int attrCol; // A handle for the "in" vec4 representing vertex color in the vertex shader
+    int attrJointID; // A handle for the "in" ivec2 representing joint IDs vertex shader
+    int attrJointWeight; // A handle for the "in" vec2 representing joint weights in the vertex shader
 
     int unifModel; // A handle for the "uniform" mat4 representing model matrix in the vertex shader
     int unifModelInvTr; // A handle for the "uniform" mat4 representing inverse transpose of the model matrix in the vertex shader
     int unifViewProj; // A handle for the "uniform" mat4 representing combined projection and view matrices in the vertex shader
     int unifCamPos; // A handle for the "uniform" vec4 representing color of geometry in the vertex shader
-
+    int unifBindMats; // A handle for the "uniform" array of matrices that each describe the bind matrix of a particular joint in the vertex shader
+    int unifTransMats; // A handle for the "uniform" array of matrices that each describe the
+                      // current overall transformation of a particular joint in the vertex shader
 public:
     ShaderProgram(OpenGLContext* context);
     // Sets up the requisite GL data and shaders from the given .glsl files
@@ -34,6 +38,10 @@ public:
     void setModelMatrix(const glm::mat4 &model);
     // Pass the given Projection * View matrix to this shader on the GPU
     void setViewProjMatrix(const glm::mat4 &vp);
+    // Pass the given vector of bind matrices to this shader on the GPU
+    void setBindMatrix(const std::vector<glm::mat4> &bind);
+    // Pass the given vector of transformation matrices to this shader on the GPU
+    void setTransMatrix(const std::vector<glm::mat4> &trans);
     // Pass the given color to this shader on the GPU
     void setCamPos(glm::vec3 pos);
     // Draw the given object to our screen using this ShaderProgram's shaders

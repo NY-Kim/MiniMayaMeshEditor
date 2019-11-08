@@ -17,7 +17,7 @@
 MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
       m_geomSquare(this),
-      m_progLambert(this), m_progFlat(this),
+      m_progLambert(this), m_progFlat(this), m_progSkeleton(this),
       m_glCamera(),
       m_vertDisplay(this), m_halfEdgeDisplay(this), m_faceDisplay(this), m_jointDisplay(this),
       m_mesh(this), m_skeleton(this) {}
@@ -64,6 +64,10 @@ void MyGL::initializeGL()
     m_progLambert.create(":/glsl/lambert.vert.glsl", ":/glsl/lambert.frag.glsl");
     // Create and set up the flat lighting shader
     m_progFlat.create(":/glsl/flat.vert.glsl", ":/glsl/flat.frag.glsl");
+    // Create and set up the flat skeleton shader
+    m_progSkeleton.create(":/glsl/skeleton.vert.glsl", ":/glsl/skeleton.frag.glsl");
+//    m_progSkeleton.create(":/glsl/flat.vert.glsl", ":/glsl/flat.frag.glsl");
+
 
     // We have to have a VAO bound in OpenGL 3.2 Core. But if we're not
     // using multiple VAOs, we can just bind one once.
@@ -83,7 +87,7 @@ void MyGL::resizeGL(int w, int h)
 
     m_progLambert.setViewProjMatrix(viewproj);
     m_progFlat.setViewProjMatrix(viewproj);
-
+    m_progSkeleton.setViewProjMatrix(viewproj);
     printGLErrorLog();
 }
 
@@ -98,13 +102,21 @@ void MyGL::paintGL()
     m_progLambert.setViewProjMatrix(m_glCamera.getViewProj());
     m_progLambert.setCamPos(m_glCamera.eye);
 
+    m_progSkeleton.setViewProjMatrix(m_glCamera.getViewProj());
+
 //#define NOPE
 #ifndef NOPE
     //Send the geometry's transformation matrix to the shader
     m_progFlat.setModelMatrix(glm::mat4(1.0f));
     m_progLambert.setModelMatrix(glm::mat4(1.0f));
+    m_progSkeleton.setModelMatrix(glm::mat4(1.0f));
 
-    m_progFlat.draw(m_mesh);
+    if (m_mesh.vertices[0]->joint_inf.size()== 0) {
+        m_progFlat.draw(m_mesh);
+    } else {
+        m_progSkeleton.draw(m_mesh);
+    }
+
     glDisable(GL_DEPTH_TEST);
     m_progFlat.draw(m_skeleton);
     m_progFlat.draw(m_vertDisplay);
@@ -741,10 +753,14 @@ void MyGL::loadObj(QString filename) {
         m_mesh.vertices = std::move(vertices);
         m_mesh.half_edges = std::move(half_edges);
         m_mesh.faces = std::move(faces);
+    } else {
+        qWarning("Could not open the JSON file.");
+        return;
     }
 }
 
 void MyGL::loadJSON(QString filename) {
+    m_jointDisplay.representedJoint = nullptr;
     std::vector<uPtr<Joint>> joints;
 
     QFile file(filename);
@@ -792,10 +808,19 @@ void MyGL::loadJSON(QString filename) {
 
             joints.push_back(std::move(joint));
         }
+        m_skeleton.joints = std::move(joints);
+        emit sendSkeleton(&m_skeleton);
+    } else {
+        qWarning("Could not open the JSON file.");
+        return;
     }
 
-    m_skeleton.joints = std::move(joints);
-    emit sendSkeleton(&m_skeleton);
+    // clear joint influence
+    for (unsigned int i = 0; i < m_mesh.vertices.size(); i++) {
+        Vertex* vertex = m_mesh.vertices[i].get();
+        vertex->joint_inf.clear();
+    }
+    update();
 }
 
 float MyGL::distance(glm::vec3 v1, glm::vec3 v2) {
@@ -804,6 +829,7 @@ float MyGL::distance(glm::vec3 v1, glm::vec3 v2) {
 
 void MyGL::skinMesh() {
     for (unsigned int i = 0; i < m_mesh.vertices.size(); i++) {
+
         Vertex* vertex = m_mesh.vertices[i].get();
 
         Joint* j1 = nullptr; // closest joint
@@ -816,20 +842,12 @@ void MyGL::skinMesh() {
             glm::vec3 joint_pos = glm::vec3(joint->getOverallTransformation() * glm::vec4(0, 0, 0, 1));
             float dist = distance(joint_pos, vertex->pos);
 
-//            std::cout << "Vertex: " << vertex->id << std::endl;
-//            std::cout << "Given" << std::endl;
-//            std::cout << joint->id << std::endl;
-//            std::cout << joint_pos[0] << ", " << joint_pos[1] << ", " << joint_pos[2] << std::endl;
-
             if (j1 != nullptr) {
                 if (j1_dist > dist) {
                     j2 = j1;
                     j2_dist = j1_dist;
                     j1 = joint;
                     j1_dist = dist;
-//                    std::cout << "AAA" << std::endl;
-//                    std::cout << j1->id << std::endl;
-//                    std::cout << j2->id << std::endl;
                     continue;
                 }
             } else {
@@ -849,14 +867,30 @@ void MyGL::skinMesh() {
                 j2_dist = dist;
                 continue;
             }
+
         }
 
-//        std::cout << j1->position[0] << ", " << j1->position[1] << ", " << j1->position[2] << std::endl;
-//        std::cout << j2->position[0] << ", " << j2->position[1] << ", " << j2->position[2] << std::endl;
-
+//        std::cout << "\n\nFor vertex: " << vertex->id << std::endl;
+//        std::cout << "\t" << j1->name.toStdString() << ": " << j1_dist / (j1_dist + j2_dist) << std::endl;
+//        std::cout << "\t" << j2->name.toStdString() << ": " << j2_dist / (j1_dist + j2_dist) << std::endl;
         vertex->joint_inf.push_back(std::pair<int, float>(j1->id, j1_dist / (j1_dist + j2_dist)));
         vertex->joint_inf.push_back(std::pair<int, float>(j2->id, j2_dist / (j1_dist + j2_dist)));
     }
+    this->assignMatrix();
+}
+
+void MyGL::assignMatrix() {
+    std::vector<glm::mat4> bind;
+    std::vector<glm::mat4> trans;
+
+    for (unsigned int i = 0; i < m_skeleton.joints.size(); i++) {
+        Joint* joint = m_skeleton.joints[i].get();
+        bind.push_back(joint->bind_matrix);
+        trans.push_back(joint->getOverallTransformation());
+    }
+
+    m_progSkeleton.setBindMatrix(bind);
+    m_progSkeleton.setTransMatrix(trans);
 }
 
 void MyGL::jointRotateX() {
@@ -873,4 +907,3 @@ void MyGL::jointRotateZ() {
     Joint* joint = m_jointDisplay.representedJoint;
     joint->rotation = glm::angleAxis(glm::radians(5.f), glm::vec3(0, 0, 1)) * joint->rotation;
 }
-

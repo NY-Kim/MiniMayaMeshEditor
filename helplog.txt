@@ -70,3 +70,13 @@ https://en.cppreference.com/w/cpp/container/queue
 2019-11-05 4:20PM Looked up distance function to find distance between two vectors
 https://www.geeksforgeeks.org/stddistance-in-c/ 
 
+2019-11-07 3:13PM Looked up how to clear vector
+http://www.cplusplus.com/reference/vector/vector/clear/
+
+2019-11-07 4:30PM Asked Adam (in OH) how/when to assign bind matrices and what shader we need to use for highlights
+
+2019-11-07 4:54PM Looked up how to compute cosine inverse
+http://www.cplusplus.com/reference/cmath/acos/
+
+2019-11-07 6:50PM Looked up how to format float to one decimal place
+https://stackoverflow.com/questions/12103514/how-do-you-round-off-decimal-places-in-c
