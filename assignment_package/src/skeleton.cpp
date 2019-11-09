@@ -2,7 +2,7 @@
 #include <glm/gtx/rotate_vector.hpp>
 #include <iostream>
 
-Skeleton::Skeleton(OpenGLContext *context) : Drawable(context) {}
+Skeleton::Skeleton(OpenGLContext *context) : Drawable(context), selectedJoint(-1) {}
 
 Skeleton::~Skeleton() {}
 
@@ -20,7 +20,11 @@ void Skeleton::create() {
         glm::vec4 offset = glm::vec4(0, 0.5, 0, 1);
         for (int j = 0; j < 12; j++) {
             pos.push_back(joint->getOverallTransformation() * offset);
-            col.push_back(glm::vec4(1, 0, 0, 1));
+            if (i == selectedJoint) {
+                col.push_back(glm::vec4(0.4, 0, 0, 1));
+            } else {
+                col.push_back(glm::vec4(1, 0, 0, 1));
+            }
             offset = glm::rotate(offset, glm::radians(30.f), glm::vec3(1, 0, 0));
 
             if (j == 11) {
@@ -35,7 +39,11 @@ void Skeleton::create() {
         offset = glm::vec4(0, 0, 0.5, 1);
         for (int j = 12; j < 24; j++) {
             pos.push_back(joint->getOverallTransformation() * offset);
-            col.push_back(glm::vec4(0, 1, 0, 1));
+            if (i == selectedJoint) {
+                col.push_back(glm::vec4(0, 0.4, 0, 1));
+            } else {
+                col.push_back(glm::vec4(0, 1, 0, 1));
+            }
             offset = glm::rotate(offset, glm::radians(30.f), glm::vec3(0, 1, 0));
 
             if (j == 23) {
@@ -50,7 +58,11 @@ void Skeleton::create() {
         offset = glm::vec4(0.5, 0, 0, 1);
         for (int j = 24; j < 36; j++) {
             pos.push_back(joint->getOverallTransformation() * offset);
-            col.push_back(glm::vec4(0, 0, 1, 1));
+            if (i == selectedJoint) {
+                col.push_back(glm::vec4(0, 0, 0.4, 1));
+            } else {
+                col.push_back(glm::vec4(0, 0, 1, 1));
+            }
             offset = glm::rotate(offset, glm::radians(30.f), glm::vec3(0, 0, 1));
 
             if (j == 35) {

@@ -123,7 +123,7 @@ bool Drawable::bindJointID()
 bool Drawable::bindJointWeight()
 {
     if(jointWeightBound){
-        mp_context->glBindBuffer(GL_ARRAY_BUFFER, bindJointWeight());
+        mp_context->glBindBuffer(GL_ARRAY_BUFFER, bufJointWeight);
     }
     return jointWeightBound;
 }

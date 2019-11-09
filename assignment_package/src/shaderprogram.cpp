@@ -141,7 +141,7 @@ void ShaderProgram::setBindMatrix(const std::vector<glm::mat4> &bind)
                     // Transpose the matrix? OpenGL uses column-major, so no.
                        GL_FALSE,
                     // Pointer to the first element of the matrix
-                       &bind[0][0][0]);
+                       &bind.data()[0][0][0]);
     }
 }
 
@@ -159,7 +159,7 @@ void ShaderProgram::setTransMatrix(const std::vector<glm::mat4> &trans)
                     // Transpose the matrix? OpenGL uses column-major, so no.
                        GL_FALSE,
                     // Pointer to the first element of the matrix
-                       &trans[0][0][0]);
+                       &trans.data()[0][0][0]);
     }
 }
 
@@ -176,7 +176,7 @@ void ShaderProgram::setCamPos(glm::vec3 pos)
 //This function, as its name implies, uses the passed in GL widget
 void ShaderProgram::draw(Drawable &d)
 {
-        useMe();
+    useMe();
 
     // Each of the following blocks checks that:
     //   * This shader has this attribute, and

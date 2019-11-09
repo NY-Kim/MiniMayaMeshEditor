@@ -35,14 +35,10 @@ void main()
 
     vec4 posSum = vec4(0, 0, 0, 0);
     for (int i = 0; i < 2; i++) {
-//        mat4 bindMat = mat4(vec4(1, 0, 0, 0),vec4(0, 1, 0, 0),vec4(0, 0, 1, 0),vec4(0, 0, 0, 1));
-//        mat4 overallT = mat4(vec4(1, 0, 0, 0),vec4(0, 1, 0, 0),vec4(0, 0, 1, 0),vec4(0, 0, 0, 1));
-//        posSum += overallT * bindMat * 0.5 * vs_Pos;
         mat4 bindMat = ua_bindMats[in_jointIDs[i]];
         mat4 overallT = ua_jointMats[in_jointIDs[i]];
-        posSum += overallT * bindMat * 0.5 * vs_Pos;
+        posSum += overallT * bindMat * in_weights[i] * vs_Pos;
     }
 
     gl_Position = u_ViewProj * (u_Model * posSum);
-//    gl_Position = u_ViewProj * u_Model * vs_Pos;
 }

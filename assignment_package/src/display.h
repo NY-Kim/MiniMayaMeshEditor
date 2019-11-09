@@ -37,16 +37,4 @@ public:
     GLenum drawMode() override;
 };
 
-class JointDisplay : public Drawable
-{
-public:
-    Joint *representedJoint;
-
-    JointDisplay(OpenGLContext* context);
-    ~JointDisplay();
-    void create() override;
-    void updateJoint(Joint *joint);
-    GLenum drawMode() override;
-};
-
 #endif

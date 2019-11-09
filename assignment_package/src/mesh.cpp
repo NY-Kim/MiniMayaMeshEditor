@@ -35,9 +35,6 @@ void Mesh::create() {
                 jointID.push_back(glm::ivec2(vertex->joint_inf[0].first, vertex->joint_inf[1].first));
                 // joint weight
                 jointWeight.push_back(glm::vec2(vertex->joint_inf[0].second, vertex->joint_inf[1].second));
-
-//                std::cout << vertex->joint_inf[0].first << ": " << vertex->joint_inf[0].second << std::endl;
-//                std::cout << vertex->joint_inf[1].first << ": " << vertex->joint_inf[1].second << std::endl;
             }
 
             curr_edge = curr_edge->next;

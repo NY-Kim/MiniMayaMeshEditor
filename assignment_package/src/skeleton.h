@@ -8,6 +8,7 @@ class Skeleton : public Drawable
 {
 public:
     std::vector<uPtr<Joint>> joints;
+    int selectedJoint;
 
     Skeleton(OpenGLContext* context);
     ~Skeleton();

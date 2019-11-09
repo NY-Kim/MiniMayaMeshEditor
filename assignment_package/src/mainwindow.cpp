@@ -19,6 +19,7 @@ MainWindow::MainWindow(QWidget *parent) :
     this->vertexSelected = false;
     this->jointSelected = false;
     this->jsonImported = false;
+    this->skinMeshed = false;
 
     disableSpinBox();
     connect(ui->mygl, SIGNAL(sendMesh(Mesh*)), this, SLOT(slot_addMesh(Mesh*)));
@@ -121,8 +122,8 @@ void MainWindow::slot_selectFace(QListWidgetItem *face) {
     this->jointSelected = false;
 
     ui->mygl->setFocus();
-    ui->mygl->reset();
     this->deselect();
+    ui->mygl->reset();
 
     this->disableSpinBox();
     ui->faceRedSpinBox->setEnabled(true);
@@ -149,8 +150,8 @@ void MainWindow::slot_selectVertex(QListWidgetItem *vertex) {
     this->jointSelected = false;
 
     ui->mygl->setFocus();
-    ui->mygl->reset();
     this->deselect();
+    ui->mygl->reset();
 
     this->disableSpinBox();
     ui->vertPosXSpinBox->setEnabled(true);
@@ -176,7 +177,6 @@ void MainWindow::slot_selectJoint(QTreeWidgetItem *joint) {
     this->jointSelected = true;
 
     ui->mygl->setFocus();
-    ui->mygl->reset();
     this->deselect();
 
     this->disableSpinBox();
@@ -188,20 +188,20 @@ void MainWindow::slot_selectJoint(QTreeWidgetItem *joint) {
     ui->jointRotZ->setEnabled(true);
 
     Joint* j = dynamic_cast<Joint*>(joint);
-    ui->mygl->m_jointDisplay.updateJoint(j);
-    ui->mygl->m_jointDisplay.create();
-    ui->mygl->update();
+    ui->mygl->m_skeleton.selectedJoint = j->id;
 
     ui->jointPosXSpinBox->setValue(j->position[0]);
     ui->jointPosYSpinBox->setValue(j->position[1]);
     ui->jointPosZSpinBox->setValue(j->position[2]);
 
     this->displayQuat();
+    ui->mygl->reset();
+    ui->mygl->update();
 }
 
 void MainWindow::displayQuat() {
     ui->mygl->setFocus();
-    glm::quat quat = ui->mygl->m_jointDisplay.representedJoint->rotation;
+    glm::quat quat = ui->mygl->m_skeleton.joints[ui->mygl->m_skeleton.selectedJoint]->rotation;
     ui->theta->setText(QString::fromStdString(std::to_string(acos(quat.w) * 2).substr(0, 4)));
     ui->angle->setText(QString::fromStdString("(" + std::to_string(roundf(quat.x * 100) / 100).substr(0, 4) + ", " +
                                                     std::to_string(roundf(quat.y * 100) / 100).substr(0, 4) + ", " +
@@ -308,6 +308,7 @@ void MainWindow::slot_importObj() {
 
     slot_addMesh(&ui->mygl->m_mesh);
     ui->mygl->setFocus();
+    this->skinMeshed = false;
 }
 
 void MainWindow::slot_sharp() {
@@ -336,31 +337,36 @@ void MainWindow::slot_importJSON() {
     ui->mygl->loadJSON(filename);
     ui->mygl->setFocus();
     this->deselect();
-    ui->mygl->reset();
-    ui->mygl->update();
 
     slot_addSkeleton(&ui->mygl->m_skeleton);
     this->jsonImported = true;
+    this->skinMeshed = false;
+    this->jointSelected = false;
+    ui->mygl->m_skeleton.selectedJoint = -1;
+    ui->mygl->reset();
+    ui->mygl->update();
 }
 
 
 void MainWindow::slot_skinMesh() {
     if (this->jsonImported) {
+        ui->mygl->assignMatrix();
         ui->mygl->skinMesh();
         ui->mygl->setFocus();
         ui->mygl->reset();
         ui->mygl->update();
+        this->skinMeshed = true;
     }
 }
 
 void MainWindow::slot_jointPosX(double x){
     ui->mygl->setFocus();
     if (this->jointSelected) {
-        ui->mygl->m_jointDisplay.representedJoint->position[0] = x;
-        ui->mygl->m_jointDisplay.destroy();
-        ui->mygl->m_jointDisplay.create();
-        slot_addMesh(&ui->mygl->m_mesh);
-        ui->mygl->recreate();
+        ui->mygl->m_skeleton.joints[ui->mygl->m_skeleton.selectedJoint]->position[0] = x;
+        if (this->skinMeshed) {
+            ui->mygl->skinMesh();
+        }
+        ui->mygl->reset();
         ui->mygl->update();
     }
 }
@@ -368,23 +374,24 @@ void MainWindow::slot_jointPosX(double x){
 void MainWindow::slot_jointPosY(double y){
     ui->mygl->setFocus();
     if (this->jointSelected) {
-        ui->mygl->m_jointDisplay.representedJoint->position[1] = y;
-        ui->mygl->m_jointDisplay.destroy();
-        ui->mygl->m_jointDisplay.create();
-        slot_addMesh(&ui->mygl->m_mesh);
-        ui->mygl->recreate();
+        ui->mygl->m_skeleton.joints[ui->mygl->m_skeleton.selectedJoint]->position[1] = y;
+        if (this->skinMeshed) {
+            ui->mygl->skinMesh();
+        }
+        ui->mygl->reset();
         ui->mygl->update();
+
     }
 }
 
 void MainWindow::slot_jointPosZ(double z){
     ui->mygl->setFocus();
     if (this->jointSelected) {
-        ui->mygl->m_jointDisplay.representedJoint->position[2] = z;
-        ui->mygl->m_jointDisplay.destroy();
-        ui->mygl->m_jointDisplay.create();
-        slot_addMesh(&ui->mygl->m_mesh);
-        ui->mygl->recreate();
+        ui->mygl->m_skeleton.joints[ui->mygl->m_skeleton.selectedJoint]->position[2] = z;
+        if (this->skinMeshed) {
+            ui->mygl->skinMesh();
+        }
+        ui->mygl->reset();
         ui->mygl->update();
     }
 }
@@ -393,10 +400,10 @@ void MainWindow::slot_jointRotX(){
     ui->mygl->setFocus();
     if (this->jointSelected) {
         ui->mygl->jointRotateX();
-        ui->mygl->m_jointDisplay.destroy();
-        ui->mygl->m_jointDisplay.create();
-        slot_addMesh(&ui->mygl->m_mesh);
-        ui->mygl->recreate();
+        if (this->skinMeshed) {
+            ui->mygl->skinMesh();
+        }
+        ui->mygl->reset();
         ui->mygl->update();
         this->displayQuat();
     }
@@ -406,10 +413,10 @@ void MainWindow::slot_jointRotY(){
     ui->mygl->setFocus();
     if (this->jointSelected) {
         ui->mygl->jointRotateY();
-        ui->mygl->m_jointDisplay.destroy();
-        ui->mygl->m_jointDisplay.create();
-        slot_addMesh(&ui->mygl->m_mesh);
-        ui->mygl->recreate();
+        if (this->skinMeshed) {
+            ui->mygl->skinMesh();
+        }
+        ui->mygl->reset();
         ui->mygl->update();
         this->displayQuat();
     }
@@ -419,10 +426,10 @@ void MainWindow::slot_jointRotZ(){
     ui->mygl->setFocus();
     if (this->jointSelected) {
         ui->mygl->jointRotateZ();
-        ui->mygl->m_jointDisplay.destroy();
-        ui->mygl->m_jointDisplay.create();
-        slot_addMesh(&ui->mygl->m_mesh);
-        ui->mygl->recreate();
+        if (this->skinMeshed) {
+            ui->mygl->skinMesh();
+        }
+        ui->mygl->reset();
         ui->mygl->update();
         this->displayQuat();
     }

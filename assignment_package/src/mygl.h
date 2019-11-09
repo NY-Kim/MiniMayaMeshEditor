@@ -39,7 +39,6 @@ public:
     VertexDisplay m_vertDisplay;
     HalfEdgeDisplay m_halfEdgeDisplay;
     FaceDisplay m_faceDisplay;
-    JointDisplay m_jointDisplay;
 
     Mesh m_mesh;
     Skeleton m_skeleton;

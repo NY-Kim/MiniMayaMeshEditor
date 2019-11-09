@@ -21,6 +21,7 @@ public:
     bool vertexSelected;
     bool jointSelected;
     bool jsonImported;
+    bool skinMeshed;
 
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
