@@ -81,5 +81,9 @@ http://www.cplusplus.com/reference/cmath/acos/
 2019-11-07 6:50PM Looked up how to format float to one decimal place
 https://stackoverflow.com/questions/12103514/how-do-you-round-off-decimal-places-in-c
 
-2019-11-08 1:15AM Brandon helped me fix an issue where after I skin my mesh and try to rotate/transform a joint, it crashes (was setting represented vertex 
+2019-11-08 1:15AM Brandon Gonzales helped me fix an issue where after I skin my mesh and try to rotate/transform a joint, it crashes (was setting represented vertex null)
 
+2019-11-08 4:00AM Hannah helped me debug why my draw function was crashing (used function name as variable name)
+
+2019-11-09 10:37PM Looked up how to make QComboBox select no entry
+https://stackoverflow.com/questions/35113892/qcombobox-select-no-entry

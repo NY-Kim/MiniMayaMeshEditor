@@ -58,6 +58,11 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->sharp, SIGNAL(clicked(bool)), this, SLOT(slot_sharp()));
     connect(ui->importjson, SIGNAL(clicked(bool)), this, SLOT(slot_importJSON()));
     connect(ui->skinMesh, SIGNAL(clicked(bool)), this, SLOT(slot_skinMesh()));
+
+    connect(ui->joint1, SIGNAL(currentIndexChanged(int)), this, SLOT(slot_joint1Change(int)));
+    connect(ui->joint2, SIGNAL(currentIndexChanged(int)), this, SLOT(slot_joint2Change(int)));
+    connect(ui->joint1Inf, SIGNAL(valueChanged(double)), this, SLOT(slot_joint1InfChange(double)));
+    connect(ui->joint2Inf, SIGNAL(valueChanged(double)), this, SLOT(slot_joint2InfChange(double)));
 }
 
 MainWindow::~MainWindow()
@@ -79,6 +84,11 @@ void MainWindow::disableSpinBox() {
     ui->jointRotX->setEnabled(false);
     ui->jointRotY->setEnabled(false);
     ui->jointRotZ->setEnabled(false);
+    ui->joint1->setEnabled(false);
+    ui->joint2->setEnabled(false);
+    ui->joint1Inf->setEnabled(false);
+    ui->joint2Inf->setEnabled(false);
+
 }
 
 void MainWindow::on_actionQuit_triggered()
@@ -160,10 +170,22 @@ void MainWindow::slot_selectVertex(QListWidgetItem *vertex) {
 
     Vertex* v = dynamic_cast<Vertex*>(vertex);
     ui->vertsListWidget->item(v->id)->setSelected(true);
+
     ui->sharp->setChecked(v->sharp);
     ui->mygl->m_vertDisplay.updateVertex(v);
     ui->mygl->m_vertDisplay.create();
     ui->mygl->update();
+
+    if (this->skinMeshed) {
+        ui->joint1->setEnabled(true);
+        ui->joint2->setEnabled(true);
+        ui->joint1Inf->setEnabled(true);
+        ui->joint2Inf->setEnabled(true);
+        ui->joint1->setCurrentIndex(v->joint_inf[0].first + 1);
+        ui->joint1Inf->setValue(v->joint_inf[0].second);
+        ui->joint2->setCurrentIndex(v->joint_inf[1].first + 1);
+        ui->joint2Inf->setValue(v->joint_inf[1].second);
+    }
 
     ui->vertPosXSpinBox->setValue(v->pos[0]);
     ui->vertPosYSpinBox->setValue(v->pos[1]);
@@ -195,7 +217,7 @@ void MainWindow::slot_selectJoint(QTreeWidgetItem *joint) {
     ui->jointPosZSpinBox->setValue(j->position[2]);
 
     this->displayQuat();
-    ui->mygl->reset();
+    ui->mygl->recreate();
     ui->mygl->update();
 }
 
@@ -350,88 +372,155 @@ void MainWindow::slot_importJSON() {
 
 void MainWindow::slot_skinMesh() {
     if (this->jsonImported) {
-        ui->mygl->assignMatrix();
+        ui->mygl->assignBindMatrix();
         ui->mygl->skinMesh();
         ui->mygl->setFocus();
-        ui->mygl->reset();
+        ui->mygl->recreate();
         ui->mygl->update();
         this->skinMeshed = true;
+
+        int v1;
+        int v2;
+        if (this->vertexSelected) {
+            Vertex* v = ui->mygl->m_vertDisplay.representedVertex;
+            v1 = v->joint_inf[0].first;
+            v2 = v->joint_inf[1].first;
+        }
+
+        ui->joint1->setEnabled(true);
+        ui->joint2->setEnabled(true);
+        ui->joint1Inf->setEnabled(true);
+        ui->joint2Inf->setEnabled(true);
+
+        ui->joint1->clear();
+        ui->joint2->clear();
+        ui->joint1->addItem(QString(""));
+        ui->joint2->addItem(QString(""));
+
+        Skeleton* skeleton = &ui->mygl->m_skeleton;
+
+        for (unsigned int i = 0; i < skeleton->joints.size(); i++) {
+            ui->joint1->addItem(skeleton->joints[i]->name);
+            ui->joint2->addItem(skeleton->joints[i]->name);
+        }
+
+        if (this->vertexSelected) {
+            Vertex* v = ui->mygl->m_vertDisplay.representedVertex;
+            v->joint_inf[0].first = v1;
+            v->joint_inf[1].first = v2;
+
+            ui->joint1->setCurrentIndex(v->joint_inf[0].first + 1);
+            ui->joint1Inf->setValue(v->joint_inf[0].second);
+            ui->joint2->setCurrentIndex(v->joint_inf[1].first + 1);
+            ui->joint2Inf->setValue(v->joint_inf[1].second);
+        }
     }
 }
 
-void MainWindow::slot_jointPosX(double x){
+void MainWindow::slot_jointPosX(double x) {
     ui->mygl->setFocus();
     if (this->jointSelected) {
         ui->mygl->m_skeleton.joints[ui->mygl->m_skeleton.selectedJoint]->position[0] = x;
-        if (this->skinMeshed) {
-            ui->mygl->skinMesh();
-        }
-        ui->mygl->reset();
+        ui->mygl->assignTransMatrix();
+        ui->mygl->recreate();
         ui->mygl->update();
     }
 }
 
-void MainWindow::slot_jointPosY(double y){
+void MainWindow::slot_jointPosY(double y) {
     ui->mygl->setFocus();
     if (this->jointSelected) {
         ui->mygl->m_skeleton.joints[ui->mygl->m_skeleton.selectedJoint]->position[1] = y;
-        if (this->skinMeshed) {
-            ui->mygl->skinMesh();
-        }
-        ui->mygl->reset();
+        ui->mygl->assignTransMatrix();
+        ui->mygl->recreate();
         ui->mygl->update();
-
     }
 }
 
-void MainWindow::slot_jointPosZ(double z){
+void MainWindow::slot_jointPosZ(double z) {
     ui->mygl->setFocus();
     if (this->jointSelected) {
         ui->mygl->m_skeleton.joints[ui->mygl->m_skeleton.selectedJoint]->position[2] = z;
-        if (this->skinMeshed) {
-            ui->mygl->skinMesh();
-        }
-        ui->mygl->reset();
+        ui->mygl->assignTransMatrix();
+        ui->mygl->recreate();
         ui->mygl->update();
     }
 }
 
-void MainWindow::slot_jointRotX(){
+void MainWindow::slot_jointRotX() {
     ui->mygl->setFocus();
     if (this->jointSelected) {
         ui->mygl->jointRotateX();
-        if (this->skinMeshed) {
-            ui->mygl->skinMesh();
-        }
-        ui->mygl->reset();
+        ui->mygl->assignTransMatrix();
+        ui->mygl->recreate();
         ui->mygl->update();
         this->displayQuat();
     }
 }
 
-void MainWindow::slot_jointRotY(){
+void MainWindow::slot_jointRotY() {
     ui->mygl->setFocus();
     if (this->jointSelected) {
         ui->mygl->jointRotateY();
-        if (this->skinMeshed) {
-            ui->mygl->skinMesh();
-        }
-        ui->mygl->reset();
+        ui->mygl->assignTransMatrix();
+        ui->mygl->recreate();
         ui->mygl->update();
         this->displayQuat();
     }
 }
 
-void MainWindow::slot_jointRotZ(){
+void MainWindow::slot_jointRotZ() {
     ui->mygl->setFocus();
     if (this->jointSelected) {
         ui->mygl->jointRotateZ();
-        if (this->skinMeshed) {
-            ui->mygl->skinMesh();
-        }
-        ui->mygl->reset();
+        ui->mygl->assignTransMatrix();
+        ui->mygl->recreate();
         ui->mygl->update();
         this->displayQuat();
+    }
+}
+
+void MainWindow::slot_joint1Change(int i) {
+    ui->mygl->setFocus();
+    if (this->vertexSelected) {
+        Vertex* v = ui->mygl->m_vertDisplay.representedVertex;
+        v->joint_inf[0] = std::pair<int, float>(i - 1, v->joint_inf[0].second);
+        ui->mygl->recreate();
+        ui->mygl->update();
+    }
+}
+
+void MainWindow::slot_joint2Change(int i) {
+    ui->mygl->setFocus();
+    if (this->vertexSelected) {
+        Vertex* v = ui->mygl->m_vertDisplay.representedVertex;
+        v->joint_inf[1] = std::pair<int, float>(i - 1, v->joint_inf[1].second);
+        ui->mygl->recreate();
+        ui->mygl->update();
+    }
+}
+
+void MainWindow::slot_joint1InfChange(double d) {
+    ui->mygl->setFocus();
+    if (this->vertexSelected) {
+        Vertex* v = ui->mygl->m_vertDisplay.representedVertex;
+        v->joint_inf[0] = std::pair<int, float>(v->joint_inf[0].first, d);
+        v->joint_inf[1] = std::pair<int, float>(v->joint_inf[1].first, 1 - d);
+        ui->joint2Inf->setValue(1 - d);
+        ui->mygl->recreate();
+        ui->mygl->update();
+    }
+}
+
+void MainWindow::slot_joint2InfChange(double d) {
+    ui->mygl->setFocus();
+    if (this->vertexSelected) {
+        Vertex* v = ui->mygl->m_vertDisplay.representedVertex;
+        v->joint_inf[0] = std::pair<int, float>(v->joint_inf[0].first, 1 - d);
+        v->joint_inf[1] = std::pair<int, float>(v->joint_inf[1].first, d);
+        ui->joint1Inf->setValue(1 - d);
+        ui->mygl->recreate();
+        ui->mygl->update();
     }
 }
 

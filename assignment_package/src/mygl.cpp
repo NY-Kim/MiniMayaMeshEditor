@@ -882,7 +882,17 @@ void MyGL::skinMesh() {
     m_progSkeleton.setTransMatrix(trans);
 }
 
-void MyGL::assignMatrix() {
+void MyGL::assignTransMatrix() {
+    std::vector<glm::mat4> trans;
+    for (unsigned int i = 0; i < m_skeleton.joints.size(); i++) {
+        Joint* joint = m_skeleton.joints[i].get();
+        trans.push_back(joint->getOverallTransformation());
+    }
+    m_progSkeleton.setTransMatrix(trans);
+
+}
+
+void MyGL::assignBindMatrix() {
     for (unsigned int i = 0; i < m_skeleton.joints.size(); i++) {
         Joint* joint = m_skeleton.joints[i].get();
         joint->bind_matrix = glm::inverse(joint->getOverallTransformation());

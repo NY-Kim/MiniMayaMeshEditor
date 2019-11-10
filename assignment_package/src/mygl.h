@@ -71,7 +71,8 @@ public:
 
     float distance(glm::vec3 v1, glm::vec3 v2);
     void skinMesh();
-    void assignMatrix();
+    void assignTransMatrix();
+    void assignBindMatrix();
 
     void updateJointPosition(float);
     void jointRotateX();

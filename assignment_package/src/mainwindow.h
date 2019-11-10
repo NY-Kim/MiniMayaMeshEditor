@@ -67,6 +67,11 @@ private slots:
     void slot_importJSON();
     void slot_skinMesh();
 
+    void slot_joint1Change(int);
+    void slot_joint2Change(int);
+    void slot_joint1InfChange(double);
+    void slot_joint2InfChange(double);
+
 private:
     Ui::MainWindow *ui;
 };

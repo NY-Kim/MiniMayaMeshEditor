@@ -2,6 +2,7 @@
 #define JOINT_H
 #include <la.h>
 #include <QTreeWidget>
+#include <QComboBox>
 #include <glm/gtx/quaternion.hpp>
 
 class Joint : public QTreeWidgetItem
