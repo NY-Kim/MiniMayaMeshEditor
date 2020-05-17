@@ -54,9 +54,9 @@ private slots:
     void slot_jointPosY(double);
     void slot_jointPosZ(double);
 
-    void slot_jointRotX();
-    void slot_jointRotY();
-    void slot_jointRotZ();
+    void slot_jointRotX(double);
+    void slot_jointRotY(double);
+    void slot_jointRotZ(double);
 
     void slot_addVertex();
     void slot_triangulate();

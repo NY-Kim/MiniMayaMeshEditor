@@ -75,9 +75,9 @@ public:
     void assignBindMatrix();
 
     void updateJointPosition(float);
-    void jointRotateX();
-    void jointRotateY();
-    void jointRotateZ();
+    void jointRotateX(double);
+    void jointRotateY(double);
+    void jointRotateZ(double);
 
 protected:
     void keyPressEvent(QKeyEvent *e);

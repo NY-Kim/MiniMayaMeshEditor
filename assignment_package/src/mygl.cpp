@@ -48,7 +48,7 @@ void MyGL::initializeGL()
     // Set the size with which points should be rendered
     glPointSize(5);
     // Set the color with which the screen is filled at the start of each render call.
-    glClearColor(0.5, 0.5, 0.5, 1);
+    glClearColor(1.0, 1.0, 1.0, 1);
 
     printGLErrorLog();
 
@@ -553,7 +553,7 @@ void MyGL::extrudeFace() {
         glm::vec3 prev_pos = half_edge->sym->vertex->pos;
         glm::vec3 next_pos = half_edge->next->vertex->pos;
 
-        normal = glm::cross(prev_pos - curr_pos, next_pos - curr_pos);
+        normal = glm::cross(curr_pos - prev_pos, next_pos - curr_pos);
 
         if (std::abs(normal[0]) > DBL_EPSILON ||
             std::abs(normal[1]) > DBL_EPSILON ||
@@ -565,7 +565,7 @@ void MyGL::extrudeFace() {
     } while (half_edge != face->half_edge);
 
     half_edge = face->half_edge;
-    glm::vec3 displacement = 0.75f * glm::normalize(normal);
+    glm::vec3 displacement = 0.25f * glm::normalize(normal);
 
     uPtr<Vertex> vertex1 = mkU<Vertex>(half_edge->sym->vertex->pos + displacement);
     Vertex* vertex = vertex1.get();
@@ -899,17 +899,27 @@ void MyGL::assignBindMatrix() {
     }
 }
 
-void MyGL::jointRotateX() {
+void MyGL::jointRotateX(double x) {
     Joint* joint = m_skeleton.joints[m_skeleton.selectedJoint].get();
-    joint->rotation = glm::angleAxis(glm::radians(5.f), glm::vec3(1, 0, 0)) * joint->rotation;
+    glm::vec3 angles = glm::eulerAngles(joint->rotation);
+        joint->rotation = glm::angleAxis(glm::radians(float(x)), glm::vec3(1, 0, 0))
+                      * glm::angleAxis(glm::radians(angles.y), glm::vec3(0, 1, 0))
+                      * glm::angleAxis(glm::radians(angles.z), glm::vec3(0, 0, 1));
 }
 
-void MyGL::jointRotateY() {
+void MyGL::jointRotateY(double y) {
     Joint* joint = m_skeleton.joints[m_skeleton.selectedJoint].get();
-    joint->rotation = glm::angleAxis(glm::radians(5.f), glm::vec3(0, 1, 0)) * joint->rotation;
+    glm::vec3 angles = glm::eulerAngles(joint->rotation);
+    joint->rotation = glm::angleAxis(glm::radians(angles.x), glm::vec3(1, 0, 0))
+                      * glm::angleAxis(glm::radians(float(y)), glm::vec3(0, 1, 0))
+                      * glm::angleAxis(glm::radians(angles.z), glm::vec3(0, 0, 1));
 }
 
-void MyGL::jointRotateZ() {
+void MyGL::jointRotateZ(double z) {
     Joint* joint = m_skeleton.joints[m_skeleton.selectedJoint].get();
-    joint->rotation = glm::angleAxis(glm::radians(5.f), glm::vec3(0, 0, 1)) * joint->rotation;
+    glm::vec3 angles = glm::eulerAngles(joint->rotation);
+    joint->rotation = glm::angleAxis(glm::radians(angles.x), glm::vec3(1, 0, 0))
+                      * glm::angleAxis(glm::radians(angles.y), glm::vec3(0, 1, 0))
+                      * glm::angleAxis(glm::radians(float(z)), glm::vec3(0, 0, 1));
 }
+

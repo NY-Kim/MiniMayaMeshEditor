@@ -11,6 +11,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+
+    this->setStyleSheet("background-color: white;");
     ui->setupUi(this);
     ui->mygl->setFocus();
 
@@ -46,9 +48,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->jointPosYSpinBox, SIGNAL(valueChanged(double)), this, SLOT(slot_jointPosY(double)));
     connect(ui->jointPosZSpinBox, SIGNAL(valueChanged(double)), this, SLOT(slot_jointPosZ(double)));
 
-    connect(ui->jointRotX, SIGNAL(clicked(bool)), this, SLOT(slot_jointRotX()));
-    connect(ui->jointRotY, SIGNAL(clicked(bool)), this, SLOT(slot_jointRotY()));
-    connect(ui->jointRotZ, SIGNAL(clicked(bool)), this, SLOT(slot_jointRotZ()));
+    connect(ui->jointRotXSpinBox, SIGNAL(valueChanged(double)), this, SLOT(slot_jointRotX(double)));
+    connect(ui->jointRotYSpinBox, SIGNAL(valueChanged(double)), this, SLOT(slot_jointRotY(double)));
+    connect(ui->jointRotZSpinBox, SIGNAL(valueChanged(double)), this, SLOT(slot_jointRotZ(double)));
 
     connect(ui->addVertex, SIGNAL(clicked(bool)), this, SLOT(slot_addVertex()));
     connect(ui->triangulate, SIGNAL(clicked(bool)), this, SLOT(slot_triangulate()));
@@ -81,9 +83,9 @@ void MainWindow::disableSpinBox() {
     ui->jointPosXSpinBox->setEnabled(false);
     ui->jointPosYSpinBox->setEnabled(false);
     ui->jointPosZSpinBox->setEnabled(false);
-    ui->jointRotX->setEnabled(false);
-    ui->jointRotY->setEnabled(false);
-    ui->jointRotZ->setEnabled(false);
+    ui->jointRotXSpinBox->setEnabled(false);
+    ui->jointRotYSpinBox->setEnabled(false);
+    ui->jointRotZSpinBox->setEnabled(false);
     ui->joint1->setEnabled(false);
     ui->joint2->setEnabled(false);
     ui->joint1Inf->setEnabled(false);
@@ -205,9 +207,9 @@ void MainWindow::slot_selectJoint(QTreeWidgetItem *joint) {
     ui->jointPosXSpinBox->setEnabled(true);
     ui->jointPosYSpinBox->setEnabled(true);
     ui->jointPosZSpinBox->setEnabled(true);
-    ui->jointRotX->setEnabled(true);
-    ui->jointRotY->setEnabled(true);
-    ui->jointRotZ->setEnabled(true);
+    ui->jointRotXSpinBox->setEnabled(true);
+    ui->jointRotYSpinBox->setEnabled(true);
+    ui->jointRotZSpinBox->setEnabled(true);
 
     Joint* j = dynamic_cast<Joint*>(joint);
     ui->mygl->m_skeleton.selectedJoint = j->id;
@@ -215,6 +217,10 @@ void MainWindow::slot_selectJoint(QTreeWidgetItem *joint) {
     ui->jointPosXSpinBox->setValue(j->position[0]);
     ui->jointPosYSpinBox->setValue(j->position[1]);
     ui->jointPosZSpinBox->setValue(j->position[2]);
+    glm::vec3 angles = glm::eulerAngles(j->rotation);
+    ui->jointRotXSpinBox->setValue(glm::degrees(angles.x));
+    ui->jointRotYSpinBox->setValue(glm::degrees(angles.y));
+    ui->jointRotZSpinBox->setValue(glm::degrees(angles.z));
 
     this->displayQuat();
     ui->mygl->recreate();
@@ -447,10 +453,10 @@ void MainWindow::slot_jointPosZ(double z) {
     }
 }
 
-void MainWindow::slot_jointRotX() {
+void MainWindow::slot_jointRotX(double x) {
     ui->mygl->setFocus();
     if (this->jointSelected) {
-        ui->mygl->jointRotateX();
+        ui->mygl->jointRotateX(x);
         ui->mygl->assignTransMatrix();
         ui->mygl->recreate();
         ui->mygl->update();
@@ -458,10 +464,10 @@ void MainWindow::slot_jointRotX() {
     }
 }
 
-void MainWindow::slot_jointRotY() {
+void MainWindow::slot_jointRotY(double y) {
     ui->mygl->setFocus();
     if (this->jointSelected) {
-        ui->mygl->jointRotateY();
+        ui->mygl->jointRotateY(y);
         ui->mygl->assignTransMatrix();
         ui->mygl->recreate();
         ui->mygl->update();
@@ -469,10 +475,10 @@ void MainWindow::slot_jointRotY() {
     }
 }
 
-void MainWindow::slot_jointRotZ() {
+void MainWindow::slot_jointRotZ(double z) {
     ui->mygl->setFocus();
     if (this->jointSelected) {
-        ui->mygl->jointRotateZ();
+        ui->mygl->jointRotateZ(z);
         ui->mygl->assignTransMatrix();
         ui->mygl->recreate();
         ui->mygl->update();
